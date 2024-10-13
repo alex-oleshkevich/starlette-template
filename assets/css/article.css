@@ -1,0 +1,141 @@
+.article {
+    @apply text-sm;
+}
+
+.article h1,
+.article h2,
+.article h3,
+.article h4,
+.article h5,
+.article h6 {
+    @apply mb-2;
+}
+
+.article h1 {
+    @apply text-2xl;
+}
+
+.article h2 {
+    @apply text-xl;
+}
+
+.article h3 {
+    @apply text-lg;
+}
+
+.article h4 {
+    @apply text-lg;
+}
+
+.article p {
+    @apply mb-5;
+}
+
+.article hr {
+    @apply my-10;
+}
+
+.article > img,
+.article p > img {
+    @apply mb-4;
+}
+
+.article a {
+    @apply text-blue-700 hover:underline;
+    @apply dark:text-blue-300;
+}
+
+.article code {
+    @apply px-2 py-1 bg-gray-50 text-pink-800 rounded font-mono border border-gray-100;
+    @apply dark:bg-slate-500 dark:text-slate-100 border-slate-400;
+}
+
+.article ul,
+.article ol {
+    @apply ml-8 mb-4 mt-3;
+}
+
+.article ul ul,
+.article ul ol,
+.article ol ul,
+.article ol ol {
+    @apply mt-0;
+}
+
+.article ul {
+    @apply list-disc;
+}
+
+.article ol {
+    @apply list-decimal;
+}
+
+.article ul li {
+    @apply p-0 m-0;
+}
+
+.article li p {
+    @apply mb-0;
+}
+
+.article blockquote {
+    quotes: "\201C" "\201D" "\2018" "\2019";
+    @apply border-l-4 border-gray-200 my-5 pl-4 italic text-gray-500;
+}
+
+.article blockquote p:first-of-type::before {
+    content: open-quote;
+}
+
+.article blockquote p:last-of-type::after {
+    content: close-quote;
+}
+
+.article pre code {
+    @apply rounded-md bg-slate-800 text-white font-mono p-3 block my-5;
+}
+
+.alert {
+    @apply mb-5 rounded;
+}
+
+.alert p {
+    margin-bottom: 0;
+}
+
+.article .media-image {
+    @apply mb-5;
+}
+
+.article .media-image.media-full > img {
+    width: 100%;
+}
+
+.article .media-image.media-left {
+    @apply flex justify-start;
+}
+
+.article .media-image.media-center {
+    @apply flex justify-center;
+}
+
+.article .media-image.media-right {
+    @apply flex justify-end;
+}
+
+.article .table {
+    @apply mb-5 w-full;
+}
+
+.article .table th {
+    @apply py-1 px-2 border border-slate-200  bg-slate-100 font-medium;
+}
+
+.article .table td {
+    @apply py-1 px-2 border border-slate-200;
+}
+
+.article .table th p,
+.article .table td p {
+    @apply mb-0;
+}

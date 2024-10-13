@@ -1,0 +1,138 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = []
+readme = "README.md"
+license = ""
+keywords = []
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115"
+mailers = "^3.0"
+itsdangerous = "^2.1"
+starception = "^1.2"
+uvicorn = { extras = ["standard"], version = "^0.31" }
+httptools = "^0.6"
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.31" }
+passlib = "^1.7"
+pydantic = { extras = ["email"], version = "^2.9" }
+python-multipart = "^0.0.12"
+pyjwt = "^2.9"
+async-storages = { extras = ["s3"], version = "^0.7" }
+httpx = "^0.27"
+click = "^8.1"
+gunicorn = "^23.0.0"
+alembic = "^1.13"
+aiosmtplib = "^3.0"
+sentry-sdk = { extras = ["starlette"], version = "^2.13" }
+structlog = "^24.2.0"
+starlette-babel = "^1.0"
+starlette-flash = "^1.0"
+starsessions = "^2.1"
+wtforms = "^3.1.2"
+limits = { extras = ["async-redis"], version = "^3.13.0" }
+psycopg = "^3.2"
+redis = "^5.0"
+starlette-sqlalchemy = "^0"
+starlette-dispatch = "^0"
+python-slugify = "^8.0.4"
+cryptography = "^43.0.1"
+toronado = "^0.1.0"
+pydantic-settings = "^2.5.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest-asyncio = "^0.24.0"
+alembic = "^1.13"
+pytest = "^8.0"
+pytest-sugar = "^1.0"
+ruff = "^0.2"
+mypy = "^1.8"
+types-passlib = "^1.7"
+factory-boy = "^3.3"
+pytest-cov = "^5.0"
+psycopg = "^3.1.19"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+files = ["app", "tests"]
+pretty = true
+strict = true
+show_error_context = true
+show_column_numbers = true
+show_error_codes = true
+implicit_reexport = true
+exclude = ['tests/factories.py', "alembic/*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+indent-width = 4
+exclude = ['var', '.venv', '.git']
+
+[tool.ruff.lint]
+fixable = ["ALL"]
+select = ['ALL']
+exclude = ['alembic/*']
+ignore = [
+    'D',
+    'C408',
+    'PLR2004',
+    'ARG001',
+    'ANN101',
+    'TCH001',
+    'S101', # Use of `assert` detected
+    'RUF009', # Do not perform function call `env.get` in dataclass defaults
+    'TCH',
+    'TRY003', # Avoid specifying long messages outside the exception class
+    'EM101', # Exception must not use a string literal, assign to variable first
+    'PLR0913', # Too many arguments in function definition (7 > 5)
+    'PTH', # Too many arguments in function definition (7 > 5)`ISC001`.
+    'ANN401',
+    'ANN102',
+    'TD',
+    'FIX001',
+    'COM812',
+    'ARG002',
+    'B008',
+    'SIM102',
+    'ISC001',
+    'ERA001',
+    'S105',
+    'S106',
+    'B904',
+    'ARG005', # Unused lambda argument
+    'G004', #  Logging statement uses f-string
+    'PT018', # assertion should be broken down into multiple parts
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = 'auto'
+asyncio_default_fixture_loop_scope = 'session'
+norecursedirs = [
+    "node_modules", "assets", "dist", ".git", "var",
+    "*/migrations/*", "*/static/*", "docs", ".venv"
+]
+addopts = "--tb=short -s --no-cov-on-fail"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = ["tests/*", ".venv/*", ".git/*", "*/__main__.py", "examples"]
+
+[tool.coverage.report]
+exclude_also = [
+    "pragma: no cover",
+    "raise NotImplementedError"
+]

@@ -11,6 +11,7 @@ locale_dir = settings.resources_dir / "locale"
 @locale_group.command("collect")
 @click.option("--domain", default="messages")
 def collect_command(domain: str) -> None:
+    """Collect message from the source code."""
     cli = CommandLineInterface()
     cli.run(
         [
@@ -65,6 +66,7 @@ def collect_command(domain: str) -> None:
 @locale_group.command("compile")
 @click.option("--domain", default="messages")
 def compile_command(domain: str) -> None:
+    """Compile messages to the binary format."""
     cli = CommandLineInterface()
     cli.run(
         [

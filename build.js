@@ -4,8 +4,8 @@
 esbuild configuration.
 
 Usage:
-    yarn run esbuild:build
-    yarn run esbuild:watch
+    npm run esbuild:build
+    npm run esbuild:watch
 */
 
 const esbuild = require('esbuild');
@@ -14,7 +14,7 @@ const copyStaticFiles = require('esbuild-copy-static-files');
 const args = process.argv.slice(2);
 const mode = args.includes('--watch') ? 'watch' : 'build';
 
-const outputDir = process.env.DIST_DIR || `${__dirname}/rvapp/statics`;
+const outputDir = process.env.DIST_DIR || `${__dirname}/app/resources/statics`;
 
 const plugins = [
     copyStaticFiles({

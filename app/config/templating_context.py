@@ -2,6 +2,7 @@ import functools
 import typing
 
 from starlette.requests import Request
+from starlette_babel.locale import get_language
 from starlette_flash import flash
 
 from app.config import settings
@@ -20,5 +21,6 @@ def app_processor(request: Request) -> dict[str, typing.Any]:
         "media_url": functools.partial(media_url, request),
         "flash_messages": flash(request),
         "app_theme": request.cookies.get("theme", "light"),
+        "app_language": get_language(),
         **(getattr(request.state, "template_context", {})),
     }

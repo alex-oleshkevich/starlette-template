@@ -13,7 +13,7 @@ PACKAGE_NAME = __name__.split(".")[0]
 PACKAGE_DIR = pathlib.Path(importlib.import_module(PACKAGE_NAME).__path__[0])
 REPO_DIR = PACKAGE_DIR.parent
 
-RESOURCES_DIR = REPO_DIR / "resources"
+RESOURCES_DIR = PACKAGE_DIR / "resources"
 
 IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == "test"
 
@@ -72,6 +72,9 @@ class Config(BaseSettings):
     storages_s3_endpoint: str = ""
     storages_local_dir: pathlib.Path = repo_dir / "var" / "uploads"
     storages_local_url_prefix: str = "/media"
+
+    # i18n settings
+    i18n_locales: list[str] = ["en"]
 
     # sentry options
     sentry_dsn: str = ""

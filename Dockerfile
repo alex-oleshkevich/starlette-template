@@ -1,6 +1,6 @@
 ### STAGE 1 ###
 FROM node:22-alpine AS frontend
-ARG PROJECT=setme
+ARG PROJECT=app
 WORKDIR /code
 
 ADD package.json package-lock.json ./
@@ -12,7 +12,7 @@ RUN npm run build
 FROM python:3.12-slim
 ARG REPO_URL=''
 LABEL org.opencontainers.image.source=$REPO_URL
-ARG PROJECT=setme
+ARG PROJECT=app
 
 ENV PIP_NO_CACHE_DIR=off
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1

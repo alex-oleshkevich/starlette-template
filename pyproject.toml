@@ -39,7 +39,7 @@ starlette-flash = "^1.0"
 starsessions = "^2.1"
 wtforms = "^3.1.2"
 limits = { extras = ["async-redis"], version = "^3.13" }
-psycopg = "^3.2"
+psycopg = {extras = ["binary", "pool"], version = "^3.2"}
 redis = "^5.0"
 starlette-sqlalchemy = "^0"
 starlette-dispatch = "^0"

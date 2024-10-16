@@ -1,4 +1,4 @@
-from app.cli import app
+from app.cli.app import console_app
 
 if __name__ == "__main__":
-    app()
+    console_app()

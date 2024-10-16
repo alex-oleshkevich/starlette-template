@@ -1,6 +1,6 @@
 import click
 
-from app.cli import mails_group
+from app.cli.mails import mails_group
 from app.cli.settings import settings_group
 
 console_app = click.Group()

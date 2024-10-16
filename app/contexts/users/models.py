@@ -1,14 +1,13 @@
 import datetime
 
-import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 from starlette.authentication import BaseUser
 
-from app.config.sqla.columns import AutoCreatedAt, AutoUpdatedAt, DateTimeTz, IntPk
-from app.config.sqla.models import Base
+from app.config.sqla.columns import DateTimeTz, IntPk
+from app.config.sqla.models import Base, WithTimestamps
 
 
-class User(BaseUser, Base):
+class User(BaseUser, Base, WithTimestamps):
     __tablename__ = "users"
 
     id: Mapped[IntPk]
@@ -17,13 +16,10 @@ class User(BaseUser, Base):
     first_name: Mapped[str] = mapped_column(server_default="", default="")
     last_name: Mapped[str] = mapped_column(server_default="", default="")
     photo: Mapped[str] = mapped_column(server_default="", default="")
-
-    last_sign_in: Mapped[datetime.datetime | None] = mapped_column(sa.DateTime(timezone=True))
-    disabled_at: Mapped[datetime.datetime | None] = mapped_column(sa.DateTime(timezone=True))
-    email_confirmed_at: Mapped[datetime.datetime | None] = mapped_column(sa.DateTime(timezone=True))
-    created_at: Mapped[AutoCreatedAt] = mapped_column()
-    updated_at: Mapped[AutoUpdatedAt] = mapped_column()
-    deleted_at: Mapped[DateTimeTz | None] = mapped_column(sa.DateTime(timezone=True))
+    last_sign_in: Mapped[DateTimeTz | None] = mapped_column(doc="Last time the user signed in.")
+    disabled_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user was disabled.")
+    email_confirmed_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user confirmed their email.")
+    deleted_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user was deleted.")
 
     @property
     def is_authenticated(self) -> bool:
@@ -44,12 +40,6 @@ class User(BaseUser, Base):
     @property
     def is_confirmed(self) -> bool:
         return self.email_confirmed_at is not None
-
-    @property
-    def avatar(self) -> str:
-        # if self.photo:
-        #     return get_public_file_url(self.photo)
-        return ""
 
     @property
     def display_name(self) -> str:

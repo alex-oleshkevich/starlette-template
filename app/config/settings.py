@@ -48,7 +48,7 @@ class Config(BaseSettings):
     release_version: str = ""
 
     # database options
-    database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/app"
+    database_url: str = "postgresql+psycopg_async://postgres@127.0.0.1:5432/app"
     sqlalchemy_echo: bool = False
 
     # redis
@@ -60,8 +60,8 @@ class Config(BaseSettings):
 
     # email options
     mail_url: str = "smtp://localhost:1025"
-    mail_default_from_address: str = "rvapp@localhost"
-    mail_default_from_name: str = "RVApp Team"
+    mail_default_from_address: str = "project@localhost"
+    mail_default_from_name: str = "Project Team"
 
     # file storage options
     storages_type: StorageType = StorageType.LOCAL

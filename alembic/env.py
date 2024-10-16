@@ -5,21 +5,21 @@ import os
 import typing
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import AsyncEngine
-
 from alembic import context
 from alembic.autogenerate.api import AutogenContext
 from alembic.operations import MigrationScript
 from alembic.runtime.migration import MigrationContext
+from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import AsyncEngine
+
 from app.config import settings
 from app.config.sqla.models import Base
 
 model_paths = [
     *glob.glob(f"{settings.package_name}/models/*.py"),
     *glob.glob(f"{settings.package_name}/*/models.py"),
-    *glob.glob(f"{settings.package_name}/models/**/models.py"),
+    *glob.glob(f"{settings.package_name}/contexts/**/models.py"),
 ]
 
 
@@ -35,6 +35,7 @@ class RendersMigrationType:
 
 
 def discover_models() -> None:
+    """Discover models for automatic migration generation."""
     for file_name in model_paths:
         if "__init__" in file_name:
             continue

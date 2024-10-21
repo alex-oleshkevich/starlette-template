@@ -70,11 +70,12 @@ pretty = true
 strict = true
 show_error_context = true
 show_column_numbers = true
+show_error_end = true
 show_error_codes = true
 implicit_reexport = true
 warn_no_return = false
 disallow_subclassing_any = false
-#exclude = ['tests/factories.py', "alembic/*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120

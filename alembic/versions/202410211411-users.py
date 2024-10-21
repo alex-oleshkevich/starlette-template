@@ -1,8 +1,8 @@
 """users
 
-Revision ID: ea593ec2369a
+Revision ID: b636ad5ab666
 Revises:
-Create Date: 2024-10-16 10:34:13.326867
+Create Date: 2024-10-21 14:11:50.582866
 
 """
 
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "ea593ec2369a"
+revision = "b636ad5ab666"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,6 +27,8 @@ def upgrade() -> None:
         sa.Column("first_name", sa.String(), server_default="", nullable=False),
         sa.Column("last_name", sa.String(), server_default="", nullable=False),
         sa.Column("photo", sa.String(), server_default="", nullable=False),
+        sa.Column("language", sa.String(), server_default="en", nullable=False),
+        sa.Column("timezone", sa.String(), server_default="UTC", nullable=False),
         sa.Column("last_sign_in", sa.DateTime(timezone=True), nullable=True),
         sa.Column("disabled_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("email_confirmed_at", sa.DateTime(timezone=True), nullable=True),

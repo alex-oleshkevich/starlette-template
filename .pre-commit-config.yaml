@@ -34,7 +34,7 @@ repos:
                 exclude_types: [ svg ]
 
     -   repo: https://github.com/astral-sh/ruff-pre-commit
-        rev: v0.6.9
+        rev: v0.7.0
         hooks:
             -   id: ruff
                 args: [ --fix ]
@@ -42,22 +42,30 @@ repos:
             -   id: ruff-format
 
     -   repo: https://github.com/pre-commit/mirrors-mypy
-        rev: "v1.11.2"
+        rev: "v1.12.1"
         hooks:
             -   id: mypy
                 additional_dependencies:
-                    - starlette
-                    - pytest
-                    - click
-                    - redis
-                    - jinja2
-                    - mailers
-                    - types-passlib
                     - alembic
+                    - async-storages[s3]
+                    - click
+                    - cryptography
+                    - factory-boy
+                    - jinja2
+                    - limits[async-redis]
+                    - mailers
                     - pydantic
                     - pydantic-settings
-                    - cryptography
+                    - pytest
+                    - redis
+                    - starlette
+                    - starlette_auth
+                    - starlette_dispatch
+                    - starlette_babel
+                    - starlette_flash
+                    - starlette_sqlalchemy
                     - sqlalchemy[asyncio]
-                    - factory-boy
+                    - types-passlib
                     - types-python-slugify
-                    - async-storages[s3]
+                    - types-babel
+                    - types-WTForms

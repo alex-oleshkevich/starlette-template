@@ -2,9 +2,9 @@ module.exports = {
     content: [
         'app/**/*.html',
         'assets/**/*.ts',
-        'node_modules/preline/dist/*.js',
+        './node_modules/flowbite/**/*.js'
     ],
     plugins: [
-        require('preline/plugin'),
-    ]
+        require('flowbite/plugin')
+    ],
 };

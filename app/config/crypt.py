@@ -1,3 +1,4 @@
+import itsdangerous
 from anyio.to_thread import run_sync
 from cryptography.fernet import Fernet
 from passlib.context import CryptContext
@@ -62,3 +63,18 @@ def decrypt_value(data: bytes, key: str | None = None, ttl: int | None = None) -
 async def adecrypt_value(data: bytes, key: str | None = None, ttl: int | None = None) -> bytes:
     """Decrypt a value using the encryption key."""
     return await run_sync(decrypt_value, data, key, ttl)
+
+
+def sign_value(data: bytes | str, secret_key: str | None = None) -> bytes:
+    """Sign a value using the encryption key."""
+    secret_key = secret_key or settings.secret_key
+    signer = itsdangerous.TimestampSigner(secret_key)
+    return signer.sign(data)
+
+
+def verify_signed_value(data: bytes | str, max_age: int | None = None, secret_key: str | None = None) -> bytes:
+    """Verify a signed value using the key.
+    :raises itsdangerous.BadSignature"""
+    secret_key = secret_key or settings.secret_key
+    signer = itsdangerous.TimestampSigner(secret_key)
+    return signer.unsign(data, max_age)

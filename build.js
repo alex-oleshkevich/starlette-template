@@ -18,8 +18,8 @@ const outputDir = process.env.DIST_DIR || `${__dirname}/app/resources/statics`;
 
 const plugins = [
     copyStaticFiles({
-        src: './assets/static',
-        dest: outputDir,
+        src: './assets/public',
+        dest: `${outputDir}/public`,
         dereference: true,
         errorOnExist: false,
         preserveTimestamps: true,

@@ -1,3 +1,4 @@
+import datetime
 import importlib
 import os
 import pathlib
@@ -15,7 +16,7 @@ REPO_DIR = PACKAGE_DIR.parent
 
 RESOURCES_DIR = PACKAGE_DIR / "resources"
 
-IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == "test"
+IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == "unittest"
 
 
 class Config(BaseSettings):
@@ -48,7 +49,7 @@ class Config(BaseSettings):
     release_version: str = ""
 
     # database options
-    database_url: str = "postgresql+psycopg_async://postgres@127.0.0.1:5432/app"
+    database_url: str = "postgresql+psycopg_async://postgres@127.0.0.1:5432/project_template"
     sqlalchemy_echo: bool = False
 
     # redis
@@ -75,6 +76,10 @@ class Config(BaseSettings):
 
     # i18n settings
     i18n_locales: list[str] = ["en"]
+    i18n_default_locale: str = i18n_locales[0]
+
+    # timezone settings
+    timezone: str = "UTC"
 
     # sentry options
     sentry_dsn: str = ""
@@ -83,10 +88,16 @@ class Config(BaseSettings):
     # must be url-safe base64-encoded 32-byte key for Fernet
     encryption_key: str = ""
 
+    # session settings
+    session_lifetime: datetime.timedelta = datetime.timedelta(days=14)
+    session_remember_lifetime: datetime.timedelta = datetime.timedelta(days=60)
+
 
 class TestConfig(Config):
+    model_config = SettingsConfigDict(env_file=None, secrets_dir=None)
+    app_env: Environment = Environment.UNITTEST
     encryption_key: str = "w2P1uYmFG0PFmm0WcH4Eh/zEwXCoCgprtmiPl5zdDuU="
-    database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/app_test"
+    database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"
     mail_url: str = "memory://"
     file_storage_type: StorageType = StorageType.MEMORY
 

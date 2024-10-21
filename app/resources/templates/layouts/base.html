@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ app_language }}">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ page_title or settings.app_name }}</title>
-    <link rel="stylesheet" href="{{ static_url('main.css') }}">
+    <link rel="icon" href="{{ static_url('public/favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ static_url('apple-touch-icon.png') }}">
+    <link rel="stylesheet" href="{{ static_url('main.css', no_cache=settings.debug) }}">
 </head>
 
-<body>
+<body class="bg-gray-50 dark:bg-gray-900">
 {% block body %}{% endblock %}
 <script src="{{ static_url('main.js') }}"></script>
 </body>

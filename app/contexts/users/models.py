@@ -7,7 +7,7 @@ from app.config.sqla.columns import DateTimeTz, IntPk
 from app.config.sqla.models import Base, WithTimestamps
 
 
-class User(BaseUser, Base, WithTimestamps):
+class User(Base, WithTimestamps, BaseUser):
     __tablename__ = "users"
 
     id: Mapped[IntPk]
@@ -16,6 +16,8 @@ class User(BaseUser, Base, WithTimestamps):
     first_name: Mapped[str] = mapped_column(server_default="", default="")
     last_name: Mapped[str] = mapped_column(server_default="", default="")
     photo: Mapped[str] = mapped_column(server_default="", default="")
+    language: Mapped[str] = mapped_column(server_default="en", default="en")
+    timezone: Mapped[str] = mapped_column(server_default="UTC", default="UTC")
     last_sign_in: Mapped[DateTimeTz | None] = mapped_column(doc="Last time the user signed in.")
     disabled_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user was disabled.")
     email_confirmed_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user confirmed their email.")
@@ -53,3 +55,7 @@ class User(BaseUser, Base, WithTimestamps):
 
     def __str__(self) -> str:
         return self.display_name
+
+    def __eq__(self, other: object) -> bool:
+        assert isinstance(other, User)
+        return self.id == other.id

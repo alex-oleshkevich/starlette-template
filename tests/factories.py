@@ -3,24 +3,26 @@ from __future__ import annotations
 import typing
 import uuid
 
-import factory  # type: ignore[import-untyped]
+import factory
 import faker as fakerlib
-from factory.alchemy import SQLAlchemyModelFactory  # type: ignore[import-untyped]
+from factory.alchemy import SQLAlchemyModelFactory
 from starlette.applications import Starlette
 from starlette.requests import Request
 
 from app.config.crypt import make_password
 from app.contexts.users.models import User
-from tests.database import Session
+from tests.database import SyncSession
 
 faker = fakerlib.Faker()
 T = typing.TypeVar("T")
+
+Factory = factory.Factory
 
 
 class BaseModelFactory(SQLAlchemyModelFactory):
     class Meta:
         abstract = True
-        sqlalchemy_session = Session
+        sqlalchemy_session = SyncSession
         sqlalchemy_session_persistence = "commit"
 
 

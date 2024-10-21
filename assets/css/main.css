@@ -1,0 +1,11 @@
+@import "tailwind.css";
+
+@layer base {
+    a {
+        color: theme('colors.blue.500');
+        &:hover {
+            text-decoration: underline;
+        }
+        @apply dark:text-blue-500;
+    }
+}

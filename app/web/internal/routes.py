@@ -1,10 +1,14 @@
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
+from starlette_dispatch import RouteGroup
 
-from app.config import settings
+from app.config.dependencies import Settings
+
+routes = RouteGroup()
 
 
-async def version_view(_: Request) -> JSONResponse:
+@routes.get("/version")
+async def version_view(request: Request, settings: Settings) -> Response:
     return JSONResponse(
         dict(
             app_env=settings.app_env,

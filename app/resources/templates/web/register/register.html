@@ -1,0 +1,31 @@
+{% extends 'layouts/auth.html' %}
+{% import 'theme/flowbite.macro.html' as ui %}
+
+{% block content %}
+    <h1 class="text-xl font-medium text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+        {{ _('Sign in to your account') }}
+    </h1>
+    <form class="space-y-4 md:space-y-6" action="#">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
+            {{ ui.button(_('Sign up with Google'), prepend=ui.social_logo_google()) }}
+            {{ ui.button(_('Sign up with Apple'),  prepend=ui.social_logo_apple()) }}
+        </div>
+
+        {{ ui.divider('or') }}
+
+        {{ ui.form_group(form.email) }}
+        {{ ui.form_group(form.first_name) }}
+        {{ ui.form_group(form.last_name) }}
+        {{ ui.form_group(form.password) }}
+        {{ ui.form_group(form.password_confirm) }}
+
+        {{ ui.primary_button(form.submit.label.text, css_classes='w-full') }}
+
+        <p class="text-sm font-light text-gray-500 dark:text-gray-400">
+            {{ _('Already have an account?') }}
+            <a href="{{ url('login') }}" class="font-medium">
+                {{ _('Sign in instead') }}
+            </a>
+        </p>
+    </form>
+{% endblock %}

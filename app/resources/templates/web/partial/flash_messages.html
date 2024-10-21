@@ -1,0 +1,8 @@
+{% import 'theme/flowbite.macro.html' as ui %}
+{% for message in flash_messages %}
+    {% if message.category == 'error' %}
+        {{ ui.danger_alert(message.message) }}
+    {% else %}
+        {{ ui.success_alert(message.message) }}
+    {% endif %}
+{% endfor %}

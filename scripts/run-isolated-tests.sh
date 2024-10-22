@@ -6,13 +6,15 @@
 
 set -e
 
-export POSTGRES_PORT=55432
-export REDIS_PORT=56379
+function cleanup {
+    docker compose -f compose.yml down -v --remove-orphans
+}
+
+trap cleanup EXIT ERR
+
+export APP_ENV=unittest
 
 mkdir -p build
-docker compose -f compose.yml build --pull
-docker compose -f compose.yml run \
-    --rm \
-    --volume $(pwd)/build/:/code/build \
-    --remove-orphans app \
-    alembic upgrade head && ./scripts/testcover.sh $@
+docker compose build --pull
+docker compose -f compose.yml run --rm app alembic upgrade head
+docker compose -f compose.yml run --user 0 --rm app ./scripts/testcover.sh $@

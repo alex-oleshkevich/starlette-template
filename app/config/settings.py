@@ -19,7 +19,7 @@ SECRETS_DIR = os.environ.get("SECRETS_DIR")
 
 RESOURCES_DIR = PACKAGE_DIR / "resources"
 
-IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == "unittest"
+IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == Environment.UNITTEST
 
 
 class Config(BaseSettings):
@@ -97,12 +97,16 @@ class Config(BaseSettings):
 
 
 class TestConfig(Config):
+    """Configuration for unit tests.
+    Values can be overridden from the environment variables. Such environment variables must be prefixed with TEST_."""
+
     model_config = SettingsConfigDict(env_file=None, secrets_dir=None, env_prefix="TEST_")
 
     app_env: Environment = Environment.UNITTEST
     encryption_key: str = "w2P1uYmFG0PFmm0WcH4Eh/zEwXCoCgprtmiPl5zdDuU="
     database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"
     mail_url: str = "memory://"
+    cache_url: str = "memory://"
     file_storage_type: StorageType = StorageType.MEMORY
 
 

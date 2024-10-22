@@ -9,6 +9,10 @@ x-environment: &env
     REDIS_URL: redis://redis:6379/0
     DATABASE_URL: postgresql+psycopg_async://postgres:postgres@postgres:5432/postgres
 
+    # Test environment
+    TEST_DATABASE_URL: postgresql+psycopg_async://postgres:postgres@postgres:5432/postgres
+    TEST_REDIS_URL: redis://redis:6379/1
+
 services:
     app:
         build:
@@ -26,8 +30,9 @@ services:
                 condition: service_healthy
                 required: true
         volumes:
-            - ./scripts:/code/scripts
-            - ./tests:/code/tests
+            - ./scripts:/code/scripts:ro
+            - ./tests:/code/tests:ro
+            - ./build:/code/build:rw
         ports:
             - ${APP_PORT:-8000}:8000
         environment:
@@ -40,8 +45,6 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: postgres
-        ports:
-            - ${POSTGRES_PORT:-5432}:5432
         volumes:
             - postgres_data:/var/lib/postgresql/data
         healthcheck:
@@ -52,12 +55,8 @@ services:
 
     redis:
         image: redis:7-alpine
-        ports:
-            - ${REDIS_PORT:-6379}:6379
         volumes:
             - redis_data:/data
-        environment:
-            <<: *env
         healthcheck:
             test: [ "CMD", "redis-cli", "ping" ]
             interval: 10s

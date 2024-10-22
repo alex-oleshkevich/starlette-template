@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 from redis.asyncio import Redis
 
+from app.config.settings import Config
 from app.contrib.cache import Cache, JsonCacheSerializer
 from app.contrib.cache.backends.memory import MemoryCacheBackend
 from app.contrib.cache.backends.redis import RedisCacheBackend
@@ -45,8 +46,8 @@ class TestMemoryCacheBackend:
 
 @pytest.mark.skipif(not importlib.util.find_spec("redis"), reason="Redis is not installed.")
 class TestRedisCacheBackend:
-    async def test_get_set(self) -> None:
-        client = Redis.from_url("redis://")
+    async def test_get_set(self, settings: Config) -> None:
+        client = Redis.from_url(settings.redis_url)
         backend = RedisCacheBackend(client)
         await backend.set("key", b"value", 60)
         assert await backend.get("key") == b"value"

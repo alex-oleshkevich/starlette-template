@@ -4,9 +4,10 @@
 FROM node:22-alpine AS frontend
 ARG PROJECT=app
 WORKDIR /code
+ARG NPM_CONFIG_CACHE=/root/.npm
 
 ADD package.json package-lock.json ./
-RUN npm install
+RUN --mount=type=cache,target=$NPM_CONFIG_CACHE,sharing=locked npm install
 ADD . .
 RUN npm run build
 
@@ -19,36 +20,36 @@ WORKDIR /code
 ARG PROJECT=app
 ARG POETRY_INSTALL_ARGS=''
 ARG RUN_DEPS='gettext nano procps curl'
+ARG BUILD_DEPS='git'
+ARG PIP_CACHE_DIR=/root/pip-cache
+ARG POETRY_CACHE_DIR=/root/poetry-cache
+
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV PIP_NO_CACHE_DIR=off
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PIP_CACHE_DIR=$PIP_CACHE_DIR
+ENV POETRY_CACHE_DIR=$POETRY_CACHE_DIR
+ENV POETRY_VIRTUALENVS_CREATE=0
 
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     set -xe \
     && apt update -y \
-    && apt install -y --no-install-recommends $RUN_DEPS \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
+    && apt install -y --no-install-recommends $RUN_DEPS
 
 ADD pyproject.toml poetry.lock ./
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=cache,target=$PIP_CACHE_DIR,sharing=locked \
+    --mount=type=cache,target=$POETRY_CACHE_DIR,sharing=locked \
     set -xe \
-    && BUILD_DEPS="git" \
     && apt update -y \
     && apt install -y --no-install-recommends $BUILD_DEPS \
     && update-ca-certificates \
-    && pip install poetry --no-cache-dir \
-    && poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-cache $POETRY_INSTALL_ARGS \
-    && pip uninstall -y poetry \
-    && pip cache purge || true \
-    && rm -rf ~/.cache/pypoetry/{cache,artifacts} \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $BUILD_DEPS \
-    && apt-get clean -y \
-    && rm -rf /var/lib/apt/lists/*
+    && pip install poetry \
+    && poetry install --no-interaction $POETRY_INSTALL_ARGS
 
 ADD $PROJECT/ $PROJECT/
 ADD alembic/ alembic/

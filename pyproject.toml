@@ -131,7 +131,7 @@ norecursedirs = [
     "node_modules", "assets", "dist", ".git", "var",
     "*/migrations/*", "*/static/*", "docs", ".venv"
 ]
-addopts = "--tb=short -s --no-cov-on-fail -n auto"
+addopts = "--tb=short -s --no-cov-on-fail"
 testpaths = ["tests"]
 
 [tool.coverage.run]

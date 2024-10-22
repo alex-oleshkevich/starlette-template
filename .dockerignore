@@ -14,3 +14,4 @@ _var
 assets/node_modules
 rvapp/statics/*
 uploads/
+.venv

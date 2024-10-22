@@ -52,7 +52,7 @@ jobs:
                 uses: actions/upload-artifact@v3
                 with:
                     name: code_coverage
-                    path: '.coverage.*'
+                    path: 'build/coverage'
 
     build:
         runs-on: ubuntu-latest

@@ -13,6 +13,6 @@ mkdir -p build
 docker compose -f compose.yml build --pull
 docker compose -f compose.yml run \
     --rm \
-    --volume $(pwd)/var/:/code/var \
+    --volume $(pwd)/build/:/code/build \
     --remove-orphans app \
-    alembic upgrade head && ./scripts/testcover.sh
+    alembic upgrade head && ./scripts/testcover.sh $@

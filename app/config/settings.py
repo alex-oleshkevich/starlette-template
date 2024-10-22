@@ -14,6 +14,9 @@ PACKAGE_NAME = __name__.split(".")[0]
 PACKAGE_DIR = pathlib.Path(importlib.import_module(PACKAGE_NAME).__path__[0])
 REPO_DIR = PACKAGE_DIR.parent
 
+# directory with docker secrets
+SECRETS_DIR = os.environ.get("SECRETS_DIR")
+
 RESOURCES_DIR = PACKAGE_DIR / "resources"
 
 IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == "unittest"
@@ -23,7 +26,7 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="",
         env_file=REPO_DIR / ".env",
-        secrets_dir=os.environ.get("SECRETS_DIR", "var/"),
+        secrets_dir=os.environ.get("SECRETS_DIR"),
     )
 
     # global settings
@@ -94,7 +97,8 @@ class Config(BaseSettings):
 
 
 class TestConfig(Config):
-    model_config = SettingsConfigDict(env_file=None, secrets_dir=None)
+    model_config = SettingsConfigDict(env_file=None, secrets_dir=None, env_prefix="TEST_")
+
     app_env: Environment = Environment.UNITTEST
     encryption_key: str = "w2P1uYmFG0PFmm0WcH4Eh/zEwXCoCgprtmiPl5zdDuU="
     database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"

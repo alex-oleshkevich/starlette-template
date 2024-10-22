@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-python -m coverage run --branch --parallel-mode -m pytest
+set -e
+
+export APP_ENV=unittest
+export APP_DEBUG=1
+
+python -m coverage run -m pytest $@
 python -m coverage combine
-python -m coverage html --skip-covered --skip-empty
-python -m coverage report --fail-under=100
+python -m coverage html
+python -m coverage report

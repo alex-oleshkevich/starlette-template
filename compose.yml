@@ -2,20 +2,41 @@ volumes:
     postgres_data:
     redis_data:
 
+x-environment: &env
+    DEBUG: 1
+    SECRET_KEY: y/PIlnr+JJthKfM0+77vMn9MS8s5ZQ2RyAiXs3l2oCU=
+    ENCRYPTION_KEY: F0KBul8yt230U3ddjhfgwBm/EAzavfe/vGLtxNOAjDg=
+    REDIS_URL: redis://redis:6379/0
+    DATABASE_URL: postgresql+psycopg_async://postgres:postgres@postgres:5432/postgres
+
 services:
     app:
-        build: .
+        build:
+            context: .
+            args:
+                - RELEASE_ID=${RELEASE_ID:-}
+                - RELEASE_BRANCH=${RELEASE_BRANCH:-}
+                - RELEASE_COMMIT=${RELEASE_COMMIT:-}
+                - RELEASE_DATE=${RELEASE_DATE:-}
         depends_on:
-            - postgres
-            - redis
+            postgres:
+                condition: service_healthy
+                required: true
+            redis:
+                condition: service_healthy
+                required: true
+        volumes:
+            - ./scripts:/code/scripts
+            - ./tests:/code/tests
         ports:
             - ${APP_PORT:-8000}:8000
-        env_file:
-            - .env_compose
+        environment:
+            <<: *env
 
     postgres:
         image: postgres:17-alpine
         environment:
+            <<: *env
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: postgres
@@ -23,6 +44,11 @@ services:
             - ${POSTGRES_PORT:-5432}:5432
         volumes:
             - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD", "pg_isready" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
     redis:
         image: redis:7-alpine
@@ -30,3 +56,10 @@ services:
             - ${REDIS_PORT:-6379}:6379
         volumes:
             - redis_data:/data
+        environment:
+            <<: *env
+        healthcheck:
+            test: [ "CMD", "redis-cli", "ping" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5

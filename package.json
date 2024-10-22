@@ -8,9 +8,7 @@
         "build": "npm run tailwind:build && npm run esbuild:build"
     },
     "dependencies": {
-        "flowbite": "^2.5.2"
-    },
-    "devDependencies": {
+        "flowbite": "^2.5.2",
         "esbuild": "0.24.0",
         "esbuild-copy-static-files": "0.1.0",
         "tailwindcss": "^3.4.14",

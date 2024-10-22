@@ -1,9 +1,9 @@
 name: Build
 
 on:
+    workflow_dispatch:
     push:
         branches: [ master, main ]
-    workflow_dispatch:
 
 permissions:
     contents: read
@@ -38,108 +38,21 @@ jobs:
             -   name: "Run pre-commit"
                 uses: pre-commit/action@v3.0.1
 
-            -   name: "Send Telegram failure notification"
-                uses: appleboy/telegram-action@master
-                if: failure()
-                with:
-                    to: ${{ vars.TELEGRAM_CHAT_ID }}
-                    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-                    message: |
-                        Linting of "${{ github.repository }}" has failed.
-                        Author: ${{ github.actor }}
-                        Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-
     unit-tests:
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
                 python-version: [ '3.12' ]
-
-        services:
-            postgres:
-                image: cimg/postgres:17.0-postgis
-                env:
-                    POSTGRES_USER: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DB: postgres
-                ports: [ '5432:5432' ]
-                options: >-
-                    --health-cmd pg_isready
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-
-            redis:
-                image: redis:6
-                ports: [ '6379:6379' ]
-                options: >-
-                    --health-cmd "redis-cli ping"
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 5
-
         steps:
             -   uses: actions/checkout@v4
-
-            -   name: "Set up Python"
-                uses: actions/setup-python@v5
-                with:
-                    cache: pip
-                    python-version: ${{ matrix.python-version }}
-
-            -   name: "Cache poetry"
-                uses: actions/cache@v4
-                with:
-                    path: |
-                        ~/.cache/pypoetry
-                        ~/.cache/pip
-                    key: ${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-
-            -   name: "Install dependencies"
-                run: |
-                    python -m pip install --upgrade pip poetry coverage[toml]
-                    poetry config virtualenvs.create false
-                    poetry install --no-interaction
-
-            -   name: "Run tests"
-                env:
-                    DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
-                    REDIS_URL: redis://localhost:6379/0
-                    SECRET_KEY: key!
-                    GOOGLE_MAPS_KEY: ""
-                    DEBUG: 1
-                    FILE_STORAGE_BACKEND: local
-                    PUSH_MESSENGER_BACKEND: memory
-                    FIREBASE_SERVICE_ACCOUNT_FILE: ""
-                    ENCRYPTION_KEY: JI2nQ1Tx/2jT+iavwHSkMfEUVh8554UcTT/X4gHWqzU=
-                    APPLE_SIGNIN_KEY: ""
-                run: |
-                    alembic upgrade head
-                    ${{ github.workspace }}/scripts/test.sh
+            -   run: ./scripts/run-isolated-tests.sh
 
             -   name: "Upload coverage data"
                 uses: actions/upload-artifact@v3
                 with:
                     name: code_coverage
                     path: '.coverage.*'
-
-            -   name: "Upload coverage"
-                uses: codecov/codecov-action@v3
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-
-            -   name: "Send Telegram failure notification"
-                uses: appleboy/telegram-action@master
-                if: failure() && vars.TELEGRAM_CHAT_ID
-                with:
-                    to: ${{ vars.TELEGRAM_CHAT_ID }}
-                    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-                    message: |
-                        Unit tests of "${{ github.repository }}" has failed.
-                        Author: ${{ github.actor }}
-                        Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     build:
         runs-on: ubuntu-latest
@@ -169,22 +82,13 @@ jobs:
                     cache-from: type=gha
                     cache-to: type=gha,mode=max
                     build-args: |
+                        REPO_URL=${{ github.repository }}
                         RELEASE_ID=${{ github.commit }}
                         RELEASE_BRANCH=${{ github.commit }}
                         RELEASE_DATE=${{ github.date }}
                         RELEASE_COMMIT=${{ github.commit }}
+                        POETRY_INSTALL_ARGS=--only main
                     tags: |
                         ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
                         ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
                     labels: ${{ steps.meta.outputs.labels }}
-
-            -   name: "Send Telegram failure notification"
-                uses: appleboy/telegram-action@master
-                if: failure()
-                with:
-                    to: ${{ vars.TELEGRAM_CHAT_ID }}
-                    token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-                    message: |
-                        Build of "${{ github.repository }}" has failed.
-                        Author: ${{ github.actor }}
-                        Workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

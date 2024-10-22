@@ -43,4 +43,5 @@ local/
 .coverage*
 /var
 /htmlcov
-
+/build
+.idea

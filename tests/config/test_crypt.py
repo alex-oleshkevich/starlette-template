@@ -3,7 +3,7 @@ import secrets
 
 from passlib.context import CryptContext
 
-from app.config.crypt import (
+from app.config.crypto import (
     adecrypt_value,
     aencrypt_value,
     amake_password,

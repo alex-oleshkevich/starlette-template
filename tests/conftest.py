@@ -5,6 +5,7 @@ import pytest
 from mailers import InMemoryTransport
 from mailers.pytest_plugin import Mailbox
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session, scoped_session
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.testclient import TestClient
@@ -16,6 +17,7 @@ from app.config import settings as app_settings
 from app.config.database import new_dbsession
 from app.config.settings import Config
 from app.contexts.users.models import User
+from tests import database
 from tests.factories import RequestFactory, RequestScopeFactory, UserFactory
 
 
@@ -49,6 +51,11 @@ async def dbsession() -> typing.AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
+def dbsession_sync() -> scoped_session[Session]:
+    return database.SyncSession
+
+
+@pytest.fixture
 def mailbox() -> Mailbox:
     assert isinstance(mailers.mail_transport, InMemoryTransport)
     mailers.mail_transport.storage.clear()
@@ -71,7 +78,7 @@ def client(app: Starlette) -> typing.Generator[TestClient, None, None]:
 def auth_client(client: TestClient, user: User, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     """Authenticated client."""
     with monkeypatch.context() as m:
-        m.setattr("app.web.login.routes.login_limiter", limits.parse("1000/second"))
+        m.setattr("app.web.login.routes.login_rate_limit", limits.parse("1000/second"))
         response = client.post("/login", data={"email": user.email, "password": "password"})
         assert response.status_code == 302, "Client should be authenticated, got: %s" % response.status_code
     return client

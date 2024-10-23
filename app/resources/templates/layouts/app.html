@@ -1,0 +1,7 @@
+{% extends 'layouts/base.html' %}
+{% import 'theme/flowbite.macro.html' as ui %}
+
+{% block body %}
+    {% include 'web/partial/flash_messages.html' %}
+    {% block content %}{% endblock %}
+{% endblock %}

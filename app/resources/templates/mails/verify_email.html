@@ -1,0 +1,10 @@
+{% trans username=user, app_name=settings.app_name %}
+    <h3>Hi {{ username }},</h3>
+    <p>
+        Welcome to {{ app_name }}! We are thrilled to have you on board!<br>
+        To verify your email address and complete your registration process, follow the link below:
+    </p>
+    <p>
+        <a href="{{ link }}">Confirm my email address</a>
+    </p>
+{% endtrans %}

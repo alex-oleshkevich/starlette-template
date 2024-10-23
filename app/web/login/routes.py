@@ -2,6 +2,7 @@ import datetime
 import time
 
 import itsdangerous
+import limits
 from starlette import status
 from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
@@ -11,15 +12,13 @@ from starlette_babel import gettext_lazy as _
 from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
-from app.config import crypt, rate_limit, settings
-from app.config.crypt import make_password
+from app.config import crypto, rate_limit, settings
+from app.config.crypto import make_password
 from app.config.dependencies import DbSession
 from app.config.templating import templates
 from app.contexts.auth.authentication import (
     authenticate_by_email,
-    forgot_password_limiter,
     is_active_guard,
-    login_limiter,
 )
 from app.contexts.auth.exceptions import AuthenticationError
 from app.contexts.auth.passwords import CHANGE_PASSWORD_TTL, make_password_reset_link
@@ -32,7 +31,8 @@ from app.web.login.forms import ChangePasswordForm, ForgotPasswordForm, LoginFor
 from app.web.login.mails import send_password_changed_mail, send_reset_password_link_mail
 
 routes = RouteGroup()
-
+login_rate_limit = limits.parse("3/minute")
+forgot_password_rate_limit = limits.parse("1/minute")
 login_guards = [
     is_active_guard,
 ]
@@ -48,7 +48,7 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
     form = await forms.create_form(request, LoginForm)
     status_code = status.HTTP_200_OK
     headers = {}
-    limiter = rate_limit.RateLimiter(login_limiter, "login")
+    limiter = rate_limit.RateLimiter(login_rate_limit, "login")
     match await forms.validate_on_submit(request, form):
         case True:
             try:
@@ -110,7 +110,7 @@ async def logout_view(request: Request) -> Response:
 async def forgot_password_view(request: Request, dbsession: DbSession) -> Response:
     """Send reset password link to the user."""
     form = await forms.create_form(request, ForgotPasswordForm)
-    limiter = rate_limit.RateLimiter(forgot_password_limiter, "forgot_password")
+    limiter = rate_limit.RateLimiter(forgot_password_rate_limit, "forgot_password")
     status_code = status.HTTP_200_OK
     headers = {}
     match await forms.validate_on_submit(request, form):
@@ -166,13 +166,13 @@ async def change_password_view(
     """Change user password."""
     try:
         user_repo = UserRepo(dbsession)
-        email = crypt.verify_signed_value(email).decode()
+        email = crypto.get_signed_value(email).decode()
         user = await user_repo.find_by_email(email)
         if not user:
             raise AuthenticationError(_("User not found."))
 
         # if this fails then the signature is invalid because the user's password has changed
-        crypt.verify_signed_value(signature, max_age=CHANGE_PASSWORD_TTL, secret_key=user.password)
+        crypto.get_signed_value(signature, max_age=CHANGE_PASSWORD_TTL, secret_key=user.password)
     except (itsdangerous.BadData, AuthenticationError):
         return templates.TemplateResponse(
             request,

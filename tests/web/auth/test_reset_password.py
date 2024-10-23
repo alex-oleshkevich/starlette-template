@@ -5,15 +5,19 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.testclient import TestClient
 
-from app.config.crypt import verify_password
+from app.config.crypto import make_password, verify_password
+from app.config.rate_limit import RateLimiter
 from app.contexts.auth.passwords import make_password_reset_link
-from tests.database import SyncSession
+from app.web.login.routes import forgot_password_rate_limit
 from tests.factories import UserFactory
 
 
 @pytest.fixture(autouse=True)
-def _forgot_password_limiter(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.login.routes.forgot_password_limiter", limits.parse("1000/second"))
+async def _forgot_password_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    limiter = RateLimiter(forgot_password_rate_limit, "login")
+    await limiter.reset()
+
+    monkeypatch.setattr("app.web.login.routes.forgot_password_rate_limit", limits.parse("1000/second"))
 
 
 def test_page_accessible(client: TestClient) -> None:
@@ -37,8 +41,9 @@ def test_missing_user(client: TestClient, mailbox: Mailbox) -> None:
 
 
 def test_rate_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.login.routes.forgot_password_limiter", limits.parse("1/minute"))
-    client.post("/forgot-password", data={"email": "nonexisting@user.tld"})
+    monkeypatch.setattr("app.web.login.routes.forgot_password_rate_limit", limits.parse("1/minute"))
+    response = client.post("/forgot-password", data={"email": "nonexisting@user.tld"})
+    assert response.status_code == 302
     response = client.post("/forgot-password", data={"email": "nonexisting@user.tld"})
     assert response.status_code == 429
 
@@ -51,7 +56,7 @@ def test_changes_password_accessible(client: TestClient, mailbox: Mailbox, http_
     assert response.status_code == 200
 
 
-def test_changes_password(client: TestClient, dbsession: Session, mailbox: Mailbox, http_request: Request) -> None:
+def test_changes_password(client: TestClient, dbsession_sync: Session, mailbox: Mailbox, http_request: Request) -> None:
     user = UserFactory()
 
     link = make_password_reset_link(http_request, user)
@@ -60,11 +65,11 @@ def test_changes_password(client: TestClient, dbsession: Session, mailbox: Mailb
     assert response.headers["location"] == "http://testserver/login"
     assert len(mailbox) == 1
 
-    SyncSession.refresh(user)
+    dbsession_sync.refresh(user)
     assert verify_password(user.password, "newpassword")
 
 
-def test_invalid_password(client: TestClient, dbsession: Session, mailbox: Mailbox, http_request: Request) -> None:
+def test_invalid_password(client: TestClient, dbsession_sync: Session, mailbox: Mailbox, http_request: Request) -> None:
     user = UserFactory()
 
     link = make_password_reset_link(http_request, user)
@@ -72,7 +77,7 @@ def test_invalid_password(client: TestClient, dbsession: Session, mailbox: Mailb
     assert response.status_code == 200
     assert len(mailbox) == 0
 
-    SyncSession.refresh(user)
+    dbsession_sync.refresh(user)
     assert not verify_password(user.password, "newpassword")
     assert "Passwords must match." in response.text
 
@@ -92,4 +97,17 @@ def test_invalid_signature(client: TestClient, mailbox: Mailbox, http_request: R
     link = make_password_reset_link(http_request, user)
     *_, email, _ = link.path.split("/")
     response = client.get(f"/change-password/{email}/invalidsignature")
+    assert response.status_code == 400
+
+
+def test_changes_password_second_attempt(client: TestClient, dbsession_sync: Session, http_request: Request) -> None:
+    user = UserFactory()
+
+    link = make_password_reset_link(http_request, user)
+
+    # change user password in the meantime, this should invalidate the link signature
+    user.password = make_password("alternatepassword")
+    dbsession_sync.commit()
+
+    response = client.post(link.path, data={"password": "newpassword", "password_confirm": "newpassword"})
     assert response.status_code == 400

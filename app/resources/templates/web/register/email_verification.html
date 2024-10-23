@@ -1,0 +1,15 @@
+{% extends 'layouts/auth.html' %}
+
+{% block content %}
+    <div class="text-center font-medium text-lg">
+        {% if error is defined %}
+            <span class="text-red-700">{{ error }}</span>
+        {% else %}
+            <div>{{ message }}</div>
+            <br>
+            <p>
+                <a href="{{ url('home') }}">{{ _('Go to App') }}</a>
+            </p>
+        {% endif %}
+    </div>
+{% endblock %}

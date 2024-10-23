@@ -1,5 +1,4 @@
-from urllib.request import Request
-
+from starlette.requests import Request
 from starlette.responses import Response
 from starlette_dispatch import RouteGroup
 

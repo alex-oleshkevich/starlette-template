@@ -9,7 +9,7 @@ from factory.alchemy import SQLAlchemyModelFactory
 from starlette.applications import Starlette
 from starlette.requests import Request
 
-from app.config.crypt import make_password
+from app.config.crypto import make_password
 from app.contexts.users.models import User
 from tests.database import SyncSession
 

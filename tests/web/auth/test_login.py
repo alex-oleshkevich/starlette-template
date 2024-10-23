@@ -4,12 +4,16 @@ import limits
 import pytest
 from starlette.testclient import TestClient
 
+from app.config.rate_limit import RateLimiter
+from app.web.login.routes import login_rate_limit
 from tests.factories import UserFactory
 
 
 @pytest.fixture(autouse=True)
-def _login_limiter(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.login.routes.login_limiter", limits.parse("1000/second"))
+async def _login_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    limiter = RateLimiter(login_rate_limit, "login")
+    await limiter.reset()
+    monkeypatch.setattr("app.web.login.routes.login_rate_limit", limits.parse("1000/second"))
 
 
 def test_login_accessible(client: TestClient) -> None:
@@ -46,9 +50,10 @@ def test_login_not_redirects_to_foreign_page(client: TestClient) -> None:
 
 
 def test_login_rate_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.login.routes.login_limiter", limits.parse("1/minute"))
+    monkeypatch.setattr("app.web.login.routes.login_rate_limit", limits.parse("1/minute"))
 
-    client.post("/login", data={"email": "somebody@somewhere.tld", "password": "invalidpassword"})
+    response = client.post("/login", data={"email": "somebody@somewhere.tld", "password": "invalidpassword"})
+    assert response.status_code == 400
     response = client.post("/login", data={"email": "somebody@somewhere.tld", "password": "invalidpassword"})
     assert response.status_code == 429
 

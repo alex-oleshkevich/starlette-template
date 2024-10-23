@@ -95,6 +95,10 @@ class Config(BaseSettings):
     session_lifetime: datetime.timedelta = datetime.timedelta(days=14)
     session_remember_lifetime: datetime.timedelta = datetime.timedelta(days=60)
 
+    # registration
+    register_auto_login: bool = True
+    register_require_email_confirmation: bool = True
+
 
 class TestConfig(Config):
     """Configuration for unit tests.

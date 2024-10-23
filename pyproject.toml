@@ -119,9 +119,10 @@ ignore = [
     'B904',
     'ARG005', # Unused lambda argument
     'G004', # Logging statement uses f-string
-    'PT018', # assertion should be broken down into multiple parts
-    'UP031', # Use format specifiers instead of percent format
+    'PT018', # assertion should be broken down intso multiple parts
+    'UP031', # Use format specifiers instead of percent formatas
     'TRY301', # Abstract `raise` to an inner function
+    'RSE102',
 ]
 
 [tool.pytest.ini_options]

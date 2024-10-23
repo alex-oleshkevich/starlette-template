@@ -1,0 +1,7 @@
+{% extends 'layouts/app.html' %}
+
+{% block content %}
+    <form method="post" action="{{ url('logout') }}">
+        <button type="submit">Logout</button>
+    </form>
+{% endblock %}

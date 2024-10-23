@@ -72,7 +72,7 @@ def sign_value(data: bytes | str, secret_key: str | None = None) -> bytes:
     return signer.sign(data)
 
 
-def verify_signed_value(data: bytes | str, max_age: int | None = None, secret_key: str | None = None) -> bytes:
+def get_signed_value(data: bytes | str, max_age: int | None = None, secret_key: str | None = None) -> bytes:
     """Verify a signed value using the key.
     :raises itsdangerous.BadSignature"""
     secret_key = secret_key or settings.secret_key

@@ -7,9 +7,8 @@ WORKDIR /code
 ARG PROJECT=app
 ARG NPM_CONFIG_CACHE=/root/.npm
 
+ADD package.json package-lock.json /code/
 RUN --mount=type=cache,target=$NPM_CONFIG_CACHE,sharing=locked \
-    --mount=type=bind,source=package.json,target=/code/package.json \
-    --mount=type=bind,source=package-lock.json,target=/code/package-lock.json,rw \
     npm install
 ADD . .
 RUN npm run build
@@ -45,13 +44,12 @@ RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     && apt update -y \
     && apt install -y --no-install-recommends $RUN_DEPS
 
+ADD pyproject.toml poetry.lock /code/
 RUN --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     --mount=type=cache,target=$PIP_CACHE_DIR,sharing=locked \
     --mount=type=cache,target=$POETRY_CACHE_DIR,sharing=locked \
-    --mount=type=bind,source=pyproject.toml,target=/code/pyproject.toml \
-    --mount=type=bind,source=poetry.lock,target=/code/poetry.lock \
     set -xe \
     && apt update -y \
     && apt install -y --no-install-recommends $BUILD_DEPS \

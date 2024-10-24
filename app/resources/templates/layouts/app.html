@@ -1,7 +1,85 @@
 {% extends 'layouts/base.html' %}
-{% import 'theme/flowbite.macro.html' as ui %}
 
 {% block body %}
-    {% include 'web/partial/flash_messages.html' %}
-    {% block content %}{% endblock %}
+    <div class="antialiased bg-gray-50 dark:bg-gray-900">
+        <!-- drawer trigger -->
+        <button data-drawer-target="sidebar-multi-level-sidebar"
+                data-drawer-toggle="sidebar-multi-level-sidebar"
+                aria-controls="sidebar-multi-level-sidebar" type="button"
+                class="drawer-trigger"
+        >
+            <span class="sr-only">{{ _('Open sidebar') }}</span>
+            <svg class="w-6 h-6" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd" fill-rule="evenodd"
+                      d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"></path>
+            </svg>
+        </button>
+        <!-- end drawer trigger -->
+
+        <aside id="sidebar-multi-level-sidebar" class="drawer" aria-label="{{ _('Sidebar') }}">
+            <div class="sidebar">
+                <div class="px-0 py-3">
+                    <a href="https://flowbite.com" class="flex items-center justify-start mr-4 p-2">
+                        <img src="https://flowbite.s3.amazonaws.com/logo.svg" class="mr-3 h-8" alt="Flowbite Logo">
+                        <span
+                            class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Flowbite</span>
+                    </a>
+                </div>
+                <ul class="sidebar-menu">
+                    <!-- dashboard -->
+                    <li>
+                        <a href="{{ url('dashboard') }}" class="sidebar-menu-item group">
+                            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                 viewBox="0 0 22 21">
+                                <path
+                                    d="M16.975 11H10V4.025a1 1 0 0 0-1.066-.998 8.5 8.5 0 1 0 9.039 9.039.999.999 0 0 0-1-1.066h.002Z"></path>
+                                <path
+                                    d="M12.5 0c-.157 0-.311.01-.565.027A1 1 0 0 0 11 1.02V10h8.975a1 1 0 0 0 1-.935c.013-.188.028-.374.028-.565A8.51 8.51 0 0 0 12.5 0Z"></path>
+                            </svg>
+                            <span class="flex-1 ms-3 whitespace-nowrap">{{ _('Dashboard') }}</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="sidebar-menu mt-auto">
+                    <!-- dashboard -->
+                    <li>
+                        <a href="{{ url('dashboard') }}" class="sidebar-menu-item group">
+                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                 xmlns="http://www.w3.org/2000/svg" width="24"
+                                 height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="square" stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M10 19H5a1 1 0 0 1-1-1v-1a3 3 0 0 1 3-3h2m10 1a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m3 3h1m-4 3a3 3 0 0 1-3-3m3 3v1m-3-4a3 3 0 0 1 3-3m-3 3h-1m4-3v-1m-2.121 1.879-.707-.707m5.656 5.656-.707-.707m-4.242 0-.707.707m5.656-5.656-.707.707M12 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                            </svg>
+                            <span class="flex-1 ms-3 whitespace-nowrap">{{ _('Settings') }}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <form action="{{ url('logout') }}" method="post">
+                            <button type="submit"
+                                    class="sidebar-menu-item group">
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                     viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M18 18V6h-5v12h5Zm0 0h2M4 18h2.5m3.5-5.5V12M6 6l7-2v16l-7-2V6Z"/>
+                                </svg>
+
+                                <span class="flex-1 ms-3 whitespace-nowrap">{{ _('Log out') }}</span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="p-4 md:ml-64 h-auto pt-10">
+            <section class="px-4 mx-auto">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
 {% endblock %}

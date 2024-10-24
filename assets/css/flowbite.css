@@ -1,0 +1,137 @@
+@layer components {
+    :root {
+        --sidebar-width: theme('width.64');
+    }
+
+    .drawer {
+        width: var(--sidebar-width);
+        @apply fixed top-0 left-0 z-40 md:w-64 h-screen transition-transform -translate-x-full sm:translate-x-0;
+    }
+
+    .drawer-trigger {
+        @apply inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600;
+    }
+
+    .sidebar {
+        @apply h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800 flex flex-col;
+    }
+
+    .sidebar-menu {
+        @apply space-y-2 font-medium;
+    }
+
+    .sidebar-menu-item {
+        @apply flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 w-full justify-start text-left;
+    }
+
+    .sidebar-menu-item svg:first-child {
+        @apply w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white;
+    }
+
+    .sidebar > hr {
+        @apply border-t border-gray-200 pt-4 mt-4;
+    }
+
+    .btn {
+        @apply py-2.5 px-5 me-2 mb-2 text-sm transition-colors font-medium focus:outline-none rounded-lg flex justify-center items-center gap-2;
+        @apply text-gray-900 bg-white border border-gray-200;
+        @apply hover:bg-gray-100 hover:text-gray-700;
+        @apply focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700;
+        @apply dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700
+    }
+
+    .btn-primary {
+        @apply text-white bg-blue-500 hover:bg-blue-700;
+        @apply hover:text-white;
+        @apply focus:ring-blue-300;
+        @apply dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800;
+    }
+
+    .btn-danger {
+        @apply text-white bg-red-700 hover:bg-red-800;
+        @apply hover:text-white;
+        @apply focus:ring-red-300;
+        @apply dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900;
+    }
+
+    .btn-block {
+        @apply w-full;
+    }
+
+    input[type="email"],
+    input[type="text"],
+    input[type="select"],
+    input[type="url"],
+    input[type="password"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="search"],
+    input[type="time"],
+    input[type="tel"],
+    .form-control {
+        @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5;
+        @apply focus:ring-blue-500 focus:border-blue-500;
+        @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+    }
+
+    .form-group {
+    }
+
+    input[type="checkbox"],
+    .form-checkbox {
+        @apply w-4 h-4 border border-gray-300 rounded bg-gray-50;
+        @apply focus:ring-4 focus:ring-blue-300;
+        @apply dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800;
+    }
+
+    .form-group label, .form-label {
+        @apply block mb-2 text-sm font-medium text-gray-900;
+        @apply dark:text-white;
+    }
+
+    .form-help {
+        @apply text-sm text-gray-500;
+    }
+
+    .form-errors {
+        @apply text-red-700 text-sm;
+    }
+
+    /* ALERTS */
+    .alert {
+        @apply p-4 mb-4 text-sm rounded-lg;
+    }
+
+    .alert-success {
+        @apply text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400;
+    }
+
+    .alert-warning {
+        @apply text-yellow-800 bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300;
+    }
+
+    .alert-danger {
+        @apply text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400;
+    }
+
+    /* DIVIDER */
+    .divider {
+        @apply flex items-center text-xs text-center text-gray-500 uppercase px-4;
+        @apply dark:text-gray-400;
+    }
+
+    .divider::before {
+        content: '';
+        display: block;
+        margin-right: theme('spacing.4');
+        @apply flex-grow border-b dark:border-gray-600;
+    }
+
+    .divider::after {
+        content: '';
+        display: block;
+        margin-left: theme('spacing.4');
+        @apply flex-grow border-b dark:border-gray-400;
+    }
+}

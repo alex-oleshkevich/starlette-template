@@ -1,0 +1,2 @@
+{% set classes = (field.render_kw or {}).get('class', '') %}
+{{ field(class=classes) }}

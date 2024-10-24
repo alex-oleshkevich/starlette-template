@@ -1,7 +1,8 @@
 @import "tailwind.css";
+@import "flowbite.css";
 
 @layer base {
-    a {
+    a:not([class]), .link {
         color: theme('colors.blue.500');
         &:hover {
             text-decoration: underline;

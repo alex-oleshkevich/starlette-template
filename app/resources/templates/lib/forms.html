@@ -1,0 +1,45 @@
+{% macro form_input(field) %}
+    {% include 'lib/forms/input.html' %}
+{% endmacro %}
+
+{% macro form_checkbox(field) %}
+    {% include 'lib/forms/checkbox.html' %}
+{% endmacro %}
+
+{% macro form_field(field) %}
+    {% if field.type == 'BooleanField' %}
+        {{ form_checkbox(field) }}
+    {% else %}
+        {{ form_input(field) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro form_label(field) %}
+    {% include 'lib/forms/label.html' %}
+{% endmacro %}
+
+{% macro form_help(field) %}
+    {% include 'lib/forms/field_help.html' %}
+{% endmacro %}
+
+{% macro form_error(field) %}
+    {% include 'lib/forms/field_errors.html' %}
+{% endmacro %}
+
+{% macro form_group(field, label='') %}
+    <div class="form-group">
+        {% if field.type == 'BooleanField' %}
+            {% if label %}{{ label }}{% endif %}
+        {% else %}
+            {{ label or form_label(field) }}
+        {% endif %}
+
+        {{ form_field(field) }}
+        {% if field.description -%}
+            {{- form_help(field) }}
+        {%- endif %}
+        {% if field.errors -%}
+            {{ form_error(field) }}
+        {%- endif %}
+    </div>
+{% endmacro %}

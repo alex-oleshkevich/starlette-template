@@ -74,11 +74,3 @@ def test_login_with_disabled_account(client: TestClient) -> None:
     response = client.post("/login", data={"email": user.email, "password": "password"})
     assert response.status_code == 400
     assert "This account is deactivated." in response.text
-
-
-def test_login_with_remember_me(client: TestClient) -> None:
-    user = UserFactory()
-    response = client.post("/login", data={"email": user.email, "password": "password", "remember_me": "1"})
-    assert response.status_code == 302
-    assert response.headers["location"] == "/"
-    assert response.cookies.get("remember_me")

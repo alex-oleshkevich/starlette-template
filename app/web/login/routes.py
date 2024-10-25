@@ -7,7 +7,7 @@ from starlette import status
 from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
-from starlette_auth import forget_me, login, logout, remember_me
+from starlette_auth import login, logout
 from starlette_babel import gettext_lazy as _
 from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
@@ -21,6 +21,7 @@ from app.contexts.auth.authentication import (
     is_active_guard,
 )
 from app.contexts.auth.exceptions import AuthenticationError
+from app.contexts.auth.mails import send_password_changed_mail, send_reset_password_link_mail
 from app.contexts.auth.passwords import CHANGE_PASSWORD_TTL, make_password_reset_link
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
@@ -28,7 +29,6 @@ from app.contrib.urls import safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
 from app.web.login.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
-from app.web.login.mails import send_password_changed_mail, send_reset_password_link_mail
 
 routes = RouteGroup()
 login_rate_limit = limits.parse("3/minute")
@@ -63,18 +63,10 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
 
                 user.last_sign_in = datetime.datetime.now(datetime.UTC)
                 await dbsession.commit()
-                await login(request, user)
+                await login(request, user, settings.secret_key)
                 await limiter.clear(get_client_ip(request))
                 flash(request).success(_("You have been logged in."))
-                response = RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
-                if form.remember_me.data:
-                    response = remember_me(
-                        response,
-                        settings.secret_key,
-                        user,
-                        datetime.timedelta(days=60),
-                        cookie_secure=True,
-                    )
+                return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
             except AuthenticationError as exc:
                 status_code = status.HTTP_400_BAD_REQUEST
                 flash(request).error(exc.message or _("Cannot complete authentication."))
@@ -83,8 +75,6 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
                 flash(request).error(_("Too many login attempts. Please try again later."))
                 headers["Retry-After"] = str(int(time.time()) - ex.stats.reset_time)
                 headers["X-RateLimit-Remaining"] = str(ex.stats.remaining)
-            else:
-                return response
         case False:
             status_code = status.HTTP_400_BAD_REQUEST
 
@@ -102,8 +92,7 @@ async def logout_view(request: Request) -> Response:
     """Logout the user."""
     await logout(request)
     flash(request).success(_("You have been logged out."))
-    response = RedirectResponse(request.url_for("login"), status_code=status.HTTP_302_FOUND)
-    return forget_me(response)
+    return RedirectResponse(request.url_for("login"), status_code=status.HTTP_302_FOUND)
 
 
 @routes.get_or_post("/forgot-password", name="forgot_password")

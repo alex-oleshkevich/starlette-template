@@ -33,7 +33,7 @@
     }
 
     .btn {
-        @apply py-2.5 px-5 me-2 mb-2 text-sm transition-colors font-medium focus:outline-none rounded-lg flex justify-center items-center gap-2;
+        @apply py-2.5 px-5 text-sm transition-colors font-medium focus:outline-none rounded-lg flex justify-center items-center gap-2;
         @apply text-gray-900 bg-white border border-gray-200;
         @apply hover:bg-gray-100 hover:text-gray-700;
         @apply focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700;
@@ -133,5 +133,13 @@
         display: block;
         margin-left: theme('spacing.4');
         @apply flex-grow border-b dark:border-gray-400;
+    }
+
+    .card {
+        @apply bg-white dark:bg-gray-900 p-10 space-y-4 border border-gray-200 rounded-md;
+    }
+
+    .card header h2 {
+        @apply mb-4 text-xl font-bold text-gray-900 dark:text-white;
     }
 }

@@ -5,7 +5,6 @@ from starlette_babel import gettext_lazy as _
 class LoginForm(wtforms.Form):
     email = wtforms.EmailField(_("Email"), validators=[wtforms.validators.data_required()])
     password = wtforms.PasswordField(_("Password"), validators=[wtforms.validators.data_required()])
-    remember_me = wtforms.BooleanField(_("Remember me"))
     submit = wtforms.SubmitField(_("Log in"))
 
 

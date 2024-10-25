@@ -56,7 +56,7 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
 
                 flash(request).success(_("Your account has been created."))
                 if settings.register_auto_login:
-                    await login(request, user)
+                    await login(request, user, secret_key=settings.secret_key)
 
                 tasks: list[BackgroundTask] = []
                 if settings.register_require_email_confirmation:

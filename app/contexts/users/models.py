@@ -53,6 +53,9 @@ class User(Base, WithTimestamps, BaseUser):
         self.deleted_at = datetime.datetime.now(datetime.UTC)
         self.email = f"{self.id}@deleted.tld"
 
+    def get_password_hash(self) -> str:
+        return self.password
+
     def __str__(self) -> str:
         return self.display_name
 

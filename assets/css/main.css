@@ -1,5 +1,6 @@
 @import "tailwind.css";
 @import "flowbite.css";
+@import "notyf/notyf.min.css";
 
 @layer base {
     a:not([class]), .link {

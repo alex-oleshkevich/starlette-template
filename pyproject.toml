@@ -35,11 +35,11 @@ sentry-sdk = { extras = ["starlette"], version = "^2.17" }
 structlog = "^24.2"
 starlette-babel = "^1.0"
 starlette-flash = "^1.0"
-starsessions = "^2.1"
+starsessions = "^2.2"
 wtforms = "^3.2.1"
 limits = { extras = ["async-redis"], version = "^3.13" }
 psycopg = { extras = ["binary", "pool"], version = "^3.2" }
-redis = "^5.0"
+redis = "^5.2"
 starlette-sqlalchemy = "^0"
 starlette-dispatch = "^0"
 python-slugify = "^8.0"
@@ -47,7 +47,7 @@ cryptography = "^43.0"
 toronado = "^0.1.0"
 pydantic-settings = "^2.6"
 rich = "^13.9.2"
-starlette-auth = "^0.1"
+starlette-auth = "^0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.24"
@@ -123,6 +123,7 @@ ignore = [
     'UP031', # Use format specifiers instead of percent formatas
     'TRY301', # Abstract `raise` to an inner function
     'RSE102',
+    'PT',
 ]
 
 [tool.pytest.ini_options]

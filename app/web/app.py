@@ -2,7 +2,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.responses import RedirectResponse
 from starlette.routing import Mount, Route, Router
-from starlette_auth import LoginRequiredMiddleware, MultiBackend, RememberMeBackend, SessionBackend
+from starlette_auth import LoginRequiredMiddleware, SessionBackend
 from starlette_dispatch import RouteGroup
 from starsessions import CookieStore, SessionAutoloadMiddleware, SessionMiddleware
 
@@ -12,6 +12,7 @@ from app.contexts.auth.authentication import db_user_loader
 from app.web.dashboard.routes import routes as dashboard_routes
 from app.web.internal.routes import routes as internal_routes
 from app.web.login.routes import routes as login_routes
+from app.web.profile.routes import routes as profile_routes
 from app.web.register.routes import routes as register_routes
 
 web_router = Router(
@@ -26,16 +27,7 @@ web_router = Router(
         Middleware(SessionAutoloadMiddleware),
         Middleware(
             AuthenticationMiddleware,
-            backend=MultiBackend(
-                [
-                    SessionBackend(db_user_loader),
-                    RememberMeBackend(
-                        db_user_loader,
-                        secret_key=settings.secret_key,
-                        duration=settings.session_remember_lifetime,
-                    ),
-                ]
-            ),
+            backend=SessionBackend(db_user_loader, secret_key=settings.secret_key),
         ),
     ],
     routes=RouteGroup(
@@ -52,6 +44,7 @@ web_router = Router(
                 routes=RouteGroup(
                     children=[
                         dashboard_routes,
+                        profile_routes,
                     ]
                 ),
             ),

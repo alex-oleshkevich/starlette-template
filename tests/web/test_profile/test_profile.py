@@ -1,3 +1,4 @@
+from mailers.pytest_plugin import Mailbox
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -71,7 +72,7 @@ def test_changes_password(auth_client: TestClient, user: User, dbsession_sync: S
     assert verify_password(user.password, "new_password")
 
 
-def test_delete_profile(auth_client: TestClient, user: User, dbsession_sync: Session) -> None:
+def test_delete_profile(auth_client: TestClient, user: User, dbsession_sync: Session, mailbox: Mailbox) -> None:
     response = auth_client.delete("/app/profile")
 
     assert response.status_code == 302
@@ -79,3 +80,5 @@ def test_delete_profile(auth_client: TestClient, user: User, dbsession_sync: Ses
     assert "deleted" in user.email
 
     assert auth_client.get("/app/profile").status_code == 302
+    assert len(mailbox)
+    assert mailbox[0]["subject"] == "Your account has been deleted"

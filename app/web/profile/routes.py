@@ -10,7 +10,7 @@ from starlette_flash import flash
 from app.config.crypto import averify_password, make_password
 from app.config.dependencies import CurrentUser, DbSession
 from app.config.templating import templates
-from app.contexts.auth.mails import send_password_changed_mail
+from app.contexts.auth.mails import send_account_deleted_mail, send_password_changed_mail
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms, htmx
 from app.web.profile.forms import PasswordForm, ProfileForm
@@ -75,5 +75,9 @@ async def delete_password_view(request: Request, dbsession: DbSession, user: Cur
     await dbsession.commit()
     await logout(request)
     flash(request).success(_("Account has been deleted."))
-    response = RedirectResponse(request.url_for("login"), status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(
+        request.url_for("login"),
+        status_code=status.HTTP_302_FOUND,
+        background=BackgroundTask(send_account_deleted_mail, user),
+    )
     return htmx.redirect(response, request.url_for("login"))

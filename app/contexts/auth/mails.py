@@ -21,3 +21,12 @@ async def send_password_changed_mail(user: User) -> None:
         html_template="mails/password_changed.html",
         context={"user": user},
     )
+
+
+async def send_account_deleted_mail(user: User) -> None:
+    await send_templated_mail(
+        to=user.email,
+        subject=_("Your account has been deleted"),
+        html_template="mails/account_deleted.html",
+        context={"user": user},
+    )

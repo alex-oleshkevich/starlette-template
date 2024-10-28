@@ -18,7 +18,12 @@
                 {{ _('Once you delete your account, there is no going back. Please be certain.') }}
             </main>
             <footer>
-                <button class="btn btn-danger">{{ _('Yes, delete my account') }}</button>
+                <button class="btn btn-danger"
+                        hx-confirm="{{ _('Please confirm account deletion?') }}"
+                        hx-delete="{{ url('profile.delete') }}"
+                >
+                    {{ _('Yes, delete my account') }}
+                </button>
             </footer>
         </section>
     </div>

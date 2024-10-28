@@ -1,3 +1,5 @@
+import uuid
+
 import sqlalchemy as sa
 from starlette_sqlalchemy import Repo
 
@@ -11,3 +13,8 @@ class UserRepo(Repo[User]):
 
     async def find_by_email(self, email: str) -> User | None:
         return await self.one_or_none(filters.ByEmail(email))
+
+    async def delete(self, user: User) -> None:
+        user.deleted_at = sa.func.now()
+        user.email = f"{uuid.uuid4()}@deleted.tld"
+        await self.dbsession.flush()

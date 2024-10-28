@@ -1,14 +1,17 @@
 from starlette import status
 from starlette.background import BackgroundTask
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import RedirectResponse, Response
+from starlette_auth import logout
 from starlette_babel import gettext_lazy as _
 from starlette_dispatch import RouteGroup
+from starlette_flash import flash
 
 from app.config.crypto import averify_password, make_password
 from app.config.dependencies import CurrentUser, DbSession
 from app.config.templating import templates
 from app.contexts.auth.mails import send_password_changed_mail
+from app.contexts.users.repo import UserRepo
 from app.contrib import forms, htmx
 from app.web.profile.forms import PasswordForm, ProfileForm
 
@@ -63,3 +66,14 @@ async def edit_password_view(request: Request, dbsession: DbSession, user: Curre
     return templates.TemplateResponse(
         request, "web/profile/password_form.html", {"page_title": _("Edit Profile"), "form": form}
     )
+
+
+@routes.delete("/profile", name="profile.delete")
+async def delete_password_view(request: Request, dbsession: DbSession, user: CurrentUser) -> Response:
+    repo = UserRepo(dbsession)
+    await repo.delete(user)
+    await dbsession.commit()
+    await logout(request)
+    flash(request).success(_("Account has been deleted."))
+    response = RedirectResponse(request.url_for("login"), status_code=status.HTTP_302_FOUND)
+    return htmx.redirect(response, request.url_for("login"))

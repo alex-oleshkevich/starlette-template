@@ -69,3 +69,13 @@ def test_changes_password(auth_client: TestClient, user: User, dbsession_sync: S
     assert response.status_code == 204
     dbsession_sync.refresh(user)
     assert verify_password(user.password, "new_password")
+
+
+def test_delete_profile(auth_client: TestClient, user: User, dbsession_sync: Session) -> None:
+    response = auth_client.delete("/app/profile")
+
+    assert response.status_code == 302
+    dbsession_sync.refresh(user)
+    assert "deleted" in user.email
+
+    assert auth_client.get("/app/profile").status_code == 302

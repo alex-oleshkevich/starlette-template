@@ -35,6 +35,12 @@ def test_login_redirects_authenticated(auth_client: TestClient) -> None:
     assert response.headers["location"] == "http://testserver/app/"
 
 
+def test_login_redirects_unauthenticated(client: TestClient) -> None:
+    response = client.get("/app/profile")
+    assert response.status_code == 302
+    assert response.headers["location"] == "/login?next=%2Fapp%2Fprofile"
+
+
 def test_login_redirects_to_next_page(client: TestClient) -> None:
     user = UserFactory()
     response = client.post("/login?next=/app/profile", data={"email": user.email, "password": "password"})

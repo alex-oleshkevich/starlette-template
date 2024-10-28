@@ -56,6 +56,12 @@ class User(Base, WithTimestamps, BaseUser):
     def get_password_hash(self) -> str:
         return self.password
 
+    def get_preferred_language(self) -> str:
+        return self.language
+
+    def get_timezone(self) -> str:
+        return self.timezone
+
     def __str__(self) -> str:
         return self.display_name
 

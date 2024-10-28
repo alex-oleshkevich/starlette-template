@@ -3,6 +3,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.responses import RedirectResponse
 from starlette.routing import Mount, Route, Router
 from starlette_auth import LoginRequiredMiddleware, SessionBackend
+from starlette_babel import LocaleMiddleware, TimezoneMiddleware
 from starlette_dispatch import RouteGroup
 from starsessions import CookieStore, SessionAutoloadMiddleware, SessionMiddleware
 
@@ -29,6 +30,8 @@ web_router = Router(
             AuthenticationMiddleware,
             backend=SessionBackend(db_user_loader, secret_key=settings.secret_key),
         ),
+        Middleware(TimezoneMiddleware, fallback=settings.timezone),
+        Middleware(LocaleMiddleware, locales=settings.i18n_locale_codes, default_locale=settings.i18n_default_locale),
     ],
     routes=RouteGroup(
         children=[

@@ -1,5 +1,9 @@
+import zoneinfo
+
 import wtforms
 from starlette_babel import gettext_lazy as _
+
+from app.config import settings
 
 
 class ProfileForm(wtforms.Form):
@@ -22,3 +26,17 @@ class PasswordForm(wtforms.Form):
             wtforms.validators.equal_to("password", message=_("Passwords must match.")),
         ],
     )
+
+
+class RegionSettingsForm(wtforms.Form):
+    language = wtforms.SelectField(
+        _("Select language"),
+        choices=settings.i18n_locales,
+        validators=[wtforms.validators.data_required()],
+    )
+    timezone = wtforms.SelectField(
+        _("Time Zone"),
+        choices=sorted([(zone, zone) for zone in zoneinfo.available_timezones() if "/" in zone]),
+        validators=[wtforms.validators.data_required()],
+    )
+    submit = wtforms.SubmitField(_("Save all"))

@@ -4,7 +4,6 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
-from starlette_babel import LocaleMiddleware, TimezoneMiddleware
 from starlette_sqlalchemy import DbSessionMiddleware
 
 from app.api.app import api_app
@@ -24,8 +23,6 @@ configure_sentry(
 # List of middleware that will be applied to every route in the app.
 global_middleware = [
     Middleware(DbSessionMiddleware, session_factory=new_dbsession),
-    Middleware(TimezoneMiddleware, fallback=settings.timezone),
-    Middleware(LocaleMiddleware, locales=settings.i18n_locales, default_locale=settings.i18n_default_locale),
 ]
 
 app = Starlette(

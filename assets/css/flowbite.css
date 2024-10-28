@@ -49,7 +49,7 @@
     }
 
     .btn-danger {
-        @apply text-white bg-red-700 hover:bg-red-800;
+        @apply text-white bg-red-600 hover:bg-red-700;
         @apply hover:text-white;
         @apply focus:ring-red-300;
         @apply dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900;
@@ -70,6 +70,8 @@
     input[type="search"],
     input[type="time"],
     input[type="tel"],
+    select,
+    textarea,
     .form-control {
         @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5;
         @apply focus:ring-blue-500 focus:border-blue-500;

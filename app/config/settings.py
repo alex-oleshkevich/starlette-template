@@ -3,6 +3,7 @@ import importlib
 import os
 import pathlib
 import sys
+import typing
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from slugify import slugify
@@ -78,8 +79,9 @@ class Config(BaseSettings):
     storages_local_url_prefix: str = "/media"
 
     # i18n settings
-    i18n_locales: list[str] = ["en"]
-    i18n_default_locale: str = i18n_locales[0]
+    i18n_locales: typing.Sequence[tuple[str, str]] = (("en", "English"),)
+    i18n_default_locale: str = "en"
+    i18n_locale_codes: list[str] = [code for code, _ in i18n_locales]
 
     # timezone settings
     timezone: str = "UTC"

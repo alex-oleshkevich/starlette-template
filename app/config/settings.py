@@ -99,6 +99,10 @@ class Config(BaseSettings):
     register_auto_login: bool = True
     register_require_email_confirmation: bool = True
 
+    # google login
+    google_client_id: str = ""
+    google_client_secret: str = ""
+
 
 class TestConfig(Config):
     """Configuration for unit tests.

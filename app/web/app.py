@@ -9,9 +9,9 @@ from starsessions import CookieStore, SessionAutoloadMiddleware, SessionMiddlewa
 from app.config import settings
 from app.config.environment import Environment
 from app.contexts.auth.authentication import db_user_loader
+from app.web.auth.routes import routes as login_routes
 from app.web.dashboard.routes import routes as dashboard_routes
 from app.web.internal.routes import routes as internal_routes
-from app.web.login.routes import routes as login_routes
 from app.web.profile.routes import routes as profile_routes
 from app.web.register.routes import routes as register_routes
 

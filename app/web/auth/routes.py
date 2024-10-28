@@ -3,6 +3,10 @@ import time
 
 import itsdangerous
 import limits
+import structlog
+from authlib.integrations.base_client import OAuthError
+from authlib.integrations.starlette_client import StarletteOAuth2App
+from authlib.oauth2.rfc6749 import OAuth2Token
 from starlette import status
 from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
@@ -20,15 +24,16 @@ from app.contexts.auth.authentication import (
     authenticate_by_email,
     is_active_guard,
 )
-from app.contexts.auth.exceptions import AuthenticationError
+from app.contexts.auth.exceptions import AuthenticationError, UserNotRegisteredError
 from app.contexts.auth.mails import send_password_changed_mail, send_reset_password_link_mail
 from app.contexts.auth.passwords import CHANGE_PASSWORD_TTL, make_password_reset_link
+from app.contexts.auth.social import oauth
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
 from app.contrib.urls import safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
-from app.web.login.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
+from app.web.auth.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
 
 routes = RouteGroup()
 login_rate_limit = limits.parse("3/minute")
@@ -36,6 +41,9 @@ forgot_password_rate_limit = limits.parse("1/minute")
 login_guards = [
     is_active_guard,
 ]
+
+
+logger = structlog.get_logger(__name__)
 
 
 @routes.get_or_post("/login", name="login")
@@ -68,14 +76,17 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
                 flash(request).success(_("You have been logged in."))
                 return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
             except AuthenticationError as exc:
+                await logger.awarning("login error", exc_info=True, email=form.email.data, ip=get_client_ip(request))
                 status_code = status.HTTP_400_BAD_REQUEST
                 flash(request).error(exc.message or _("Cannot complete authentication."))
             except RateLimitedError as ex:
+                await logger.awarning("login rate limited", exc_info=True, ip=get_client_ip(request))
                 status_code = status.HTTP_429_TOO_MANY_REQUESTS
                 flash(request).error(_("Too many login attempts. Please try again later."))
                 headers["Retry-After"] = str(int(time.time()) - ex.stats.reset_time)
                 headers["X-RateLimit-Remaining"] = str(ex.stats.remaining)
         case False:
+            await logger.awarning("login error", exc_info=True, email=form.email.data, ip=get_client_ip(request))
             status_code = status.HTTP_400_BAD_REQUEST
 
     return templates.TemplateResponse(
@@ -182,3 +193,31 @@ async def change_password_view(
         )
 
     return templates.TemplateResponse(request, "web/auth/change_password.html", {"form": form})
+
+
+@routes.get("/social/google", name="auth.social.google")
+async def google_auth_view(request: Request) -> Response:
+    google: StarletteOAuth2App = oauth.create_client("google")
+    redirect_uri = request.url_for("auth.social.google_callback")
+    request.session["next"] = str(request.query_params.get("next", request.url_for("dashboard")))
+    return await google.authorize_redirect(request, redirect_uri)  # type: ignore[no-any-return]
+
+
+@routes.get("/social/google/callback", name="auth.social.google_callback")
+async def google_auth_callback_view(request: Request, dbsession: DbSession) -> Response:
+    try:
+        google: StarletteOAuth2App = oauth.create_client("google")
+        token: OAuth2Token = await google.authorize_access_token(request)
+        repo = UserRepo(dbsession)
+        user = await repo.find_by_email(token["userinfo"]["email"])
+        if not user:
+            raise UserNotRegisteredError()
+
+        await login(request, user, secret_key=settings.secret_key)
+        next_url = request.session.get("next", request.url_for("dashboard"))
+        redirect_to = safe_referer(request, next_url)
+        return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
+    except (OAuthError, UserNotRegisteredError, KeyError):
+        await logger.awarning("social login error", exc_info=True, provider="google")
+        flash(request).error(_("Cannot authenticated with Google, try logging in with email or create an account."))
+        return RedirectResponse(request.url_for("login"), status_code=status.HTTP_302_FOUND)

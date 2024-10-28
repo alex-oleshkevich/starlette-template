@@ -7,13 +7,6 @@
         {{ _('Sign in to your account') }}
     </h1>
     <form class="space-y-4 md:space-y-6" action="{{ url('register') }}" method="post">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
-            {{ social.google_link_button(_('Sign up with Google'), '') }}
-            {{ social.apple_link_button(_('Sign up with Apple'), '') }}
-        </div>
-
-        <div class="divider">or</div>
-
         {{ forms.form_group(form.email) }}
         {{ forms.form_group(form.first_name) }}
         {{ forms.form_group(form.last_name) }}

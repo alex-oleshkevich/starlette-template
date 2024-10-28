@@ -47,6 +47,8 @@ def pathname_matches(request: Request, pathname: str, *, path_params: dict[str, 
 def safe_referer(request: Request, url: str | URL) -> URL:
     redirect_url = str(url)
     hostname = request.url.hostname or "localhost"
-    if redirect_url.startswith(("http://", "https://")) and not redirect_url.startswith(hostname):
+    if redirect_url.startswith(("http://", "https://")) and not redirect_url.startswith(
+        ("http://" + hostname, "https://" + hostname)
+    ):
         return URL("/")
     return URL(redirect_url)

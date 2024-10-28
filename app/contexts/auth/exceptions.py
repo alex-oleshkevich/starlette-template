@@ -12,3 +12,6 @@ class InvalidCredentialsError(AuthenticationError):
 
 class UserDisabledError(AuthenticationError):
     error_code = ACCOUNT_DISABLED
+
+
+class UserNotRegisteredError(InvalidCredentialsError): ...

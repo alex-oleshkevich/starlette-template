@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 from app.config.crypto import make_password, verify_password
 from app.config.rate_limit import RateLimiter
 from app.contexts.auth.passwords import make_password_reset_link
-from app.web.login.routes import forgot_password_rate_limit
+from app.web.auth.routes import forgot_password_rate_limit
 from tests.factories import UserFactory
 
 
@@ -17,7 +17,7 @@ async def _forgot_password_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     limiter = RateLimiter(forgot_password_rate_limit, "login")
     await limiter.reset()
 
-    monkeypatch.setattr("app.web.login.routes.forgot_password_rate_limit", limits.parse("1000/second"))
+    monkeypatch.setattr("app.web.auth.routes.forgot_password_rate_limit", limits.parse("1000/second"))
 
 
 def test_page_accessible(client: TestClient) -> None:
@@ -41,7 +41,7 @@ def test_missing_user(client: TestClient, mailbox: Mailbox) -> None:
 
 
 def test_rate_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.login.routes.forgot_password_rate_limit", limits.parse("1/minute"))
+    monkeypatch.setattr("app.web.auth.routes.forgot_password_rate_limit", limits.parse("1/minute"))
     response = client.post("/forgot-password", data={"email": "nonexisting@user.tld"})
     assert response.status_code == 302
     response = client.post("/forgot-password", data={"email": "nonexisting@user.tld"})

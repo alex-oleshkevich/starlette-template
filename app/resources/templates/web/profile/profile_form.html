@@ -1,22 +1,25 @@
 {% import 'lib/forms.html' as forms %}
 
 <form action="{{ url('profile.edit') }}"
-      class="bg-white dark:bg-gray-900 p-10 space-y-4 border border-gray-200 rounded-md"
       method="post"
       hx-post="{{ url('profile.edit') }}"
       hx-target="this"
       hx-swap="outerHTML"
 >
-    <header>
-        <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">{{ _('Profile Info') }}</h2>
-    </header>
-    <main>
-        <div class="grid grid-cols-1 gap-5">
-            {{ forms.form_group(form.first_name) }}
-            {{ forms.form_group(form.last_name) }}
-        </div>
-    </main>
-    <footer>
-        <button class="btn btn-primary">{{ _('Update') }}</button>
-    </footer>
+    <div class="bg-white dark:bg-gray-900 p-10 space-y-4 border border-gray-200 rounded-md">
+        <header>
+            <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">{{ _('Profile Info') }}</h2>
+        </header>
+        <main>
+            <div class="grid grid-cols-1 gap-5">
+                {{ forms.form_group(form.first_name) }}
+                {{ forms.form_group(form.last_name) }}
+                {{ forms.form_group(form.language) }}
+                {{ forms.form_group(form.timezone) }}
+            </div>
+        </main>
+        <footer>
+            <button class="btn btn-primary">{{ _('Update') }}</button>
+        </footer>
+    </div>
 </form>

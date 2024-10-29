@@ -11,3 +11,7 @@
         @apply dark:text-blue-500;
     }
 }
+
+[x-cloak] {
+    display: none !important;
+}

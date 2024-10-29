@@ -18,6 +18,8 @@ def test_updates_profile(auth_client: TestClient, user: User, dbsession_sync: Se
         data={
             "first_name": "John1",
             "last_name": "Doe1",
+            "language": "en",
+            "timezone": "Europe/Berlin",
         },
     )
 
@@ -27,23 +29,8 @@ def test_updates_profile(auth_client: TestClient, user: User, dbsession_sync: Se
     dbsession_sync.refresh(user)
     assert user.first_name == "John1"
     assert user.last_name == "Doe1"
-
-
-def test_updates_region(auth_client: TestClient, user: User, dbsession_sync: Session) -> None:
-    response = auth_client.post(
-        "/app/profile/region",
-        data={
-            "language": "en",
-            "timezone": "Europe/Warsaw",
-        },
-    )
-
-    assert response.status_code == 204
-    assert as_htmx_response(response).triggers("toast")
-
-    dbsession_sync.refresh(user)
     assert user.language == "en"
-    assert user.timezone == "Europe/Warsaw"
+    assert user.timezone == "Europe/Berlin"
 
 
 def test_requires_current_password(auth_client: TestClient, user: User, dbsession_sync: Session) -> None:

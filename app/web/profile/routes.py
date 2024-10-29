@@ -13,7 +13,7 @@ from app.config.templating import templates
 from app.contexts.auth.mails import send_account_deleted_mail, send_password_changed_mail
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms, htmx
-from app.web.profile.forms import PasswordForm, ProfileForm, RegionSettingsForm
+from app.web.profile.forms import PasswordForm, ProfileForm
 
 routes = RouteGroup()
 
@@ -22,7 +22,6 @@ routes = RouteGroup()
 async def profile_view(request: Request, user: CurrentUser) -> Response:
     profile_form = await forms.create_form(request, ProfileForm, obj=user)
     password_form = await forms.create_form(request, PasswordForm)
-    region_form = await forms.create_form(request, RegionSettingsForm, obj=user)
 
     return templates.TemplateResponse(
         request,
@@ -31,7 +30,6 @@ async def profile_view(request: Request, user: CurrentUser) -> Response:
             "page_title": _("My Profile"),
             "profile_form": profile_form,
             "password_form": password_form,
-            "region_form": region_form,
         },
     )
 
@@ -67,22 +65,6 @@ async def password_view(request: Request, dbsession: DbSession, user: CurrentUse
 
     return templates.TemplateResponse(
         request, "web/profile/password_form.html", {"page_title": _("Edit Profile"), "form": form}
-    )
-
-
-@routes.post("/profile/region", name="profile.region")
-async def region_view(request: Request, dbsession: DbSession, user: CurrentUser) -> Response:
-    form = await forms.create_form(request, RegionSettingsForm)
-    if await forms.validate_on_submit(request, form):
-        form.populate_obj(user)
-        await dbsession.commit()
-        return htmx.response(
-            status.HTTP_204_NO_CONTENT,
-            background=BackgroundTask(send_password_changed_mail, user),
-        ).toast(_("Settings updated successfully."))
-
-    return templates.TemplateResponse(
-        request, "web/profile/region_form.html", {"page_title": _("Edit Profile"), "form": form}
     )
 
 

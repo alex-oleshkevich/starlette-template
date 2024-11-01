@@ -3,6 +3,42 @@
         --sidebar-width: theme('width.64');
     }
 
+    body {
+        @apply antialiased text-gray-900 dark:text-white;
+    }
+
+    h1 {
+        @apply text-3xl font-semibold mb-2;
+    }
+
+    h2 {
+        @apply text-2xl font-semibold mb-2;
+    }
+
+    h3 {
+        @apply text-xl font-semibold mb-2;
+    }
+
+    h4 {
+        @apply text-lg font-semibold mb-2;
+    }
+
+    h5 {
+        @apply text-base font-semibold mb-2;
+    }
+
+    h6 {
+        @apply text-sm font-semibold mb-2;
+    }
+
+    p {
+        @apply text-base mb-4;
+    }
+
+    ul, ol {
+        @apply mb-4;
+    }
+
     .drawer {
         width: var(--sidebar-width);
         @apply fixed top-0 left-0 z-40 md:w-64 h-screen transition-transform -translate-x-full sm:translate-x-0;
@@ -42,6 +78,13 @@
     }
 
     .btn-primary {
+        @apply text-white bg-gray-700 hover:bg-gray-800;
+        @apply hover:text-white;
+        @apply focus:ring-gray-300;
+        @apply dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800;
+    }
+
+    .btn-accent {
         @apply text-white bg-blue-500 hover:bg-blue-700;
         @apply hover:text-white;
         @apply focus:ring-blue-300;
@@ -57,6 +100,11 @@
 
     .btn-block {
         @apply w-full;
+    }
+
+    .btn-link {
+        @apply text-blue-500 hover:underline border-0 hover:bg-transparent;
+        @apply dark:text-blue-400 dark:hover:text-blue-300;
     }
 
     input[type="email"],
@@ -83,6 +131,7 @@
     }
 
     .form-group {
+        @apply mb-5;
     }
 
     input[type="checkbox"],
@@ -111,15 +160,15 @@
     }
 
     .alert-success {
-        @apply text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400;
+        @apply text-green-800 bg-green-50 dark:bg-gray-800 dark:text-green-400 border border-green-200;
     }
 
     .alert-warning {
-        @apply text-yellow-800 bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300;
+        @apply text-yellow-800 bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300  border border-yellow-200;
     }
 
     .alert-danger {
-        @apply text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400;
+        @apply text-red-800 bg-red-50 dark:bg-gray-800 dark:text-red-400  border border-red-200;
     }
 
     /* DIVIDER */
@@ -151,7 +200,7 @@
     }
 
     .avatar {
-        @apply w-10 h-10 rounded;
+        @apply w-10 h-10 rounded inline-flex items-center justify-center font-semibold;
     }
 
     .avatar-circle {

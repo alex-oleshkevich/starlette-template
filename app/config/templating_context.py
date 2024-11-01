@@ -22,5 +22,9 @@ def app_processor(request: Request) -> dict[str, typing.Any]:
         "flash_messages": flash(request),
         "app_theme": request.cookies.get("theme", "light"),
         "app_language": get_language(),
+        "user": request.user,
+        "team": getattr(request.state, "team", None),
+        "team_member": getattr(request.state, "team_member", None),
+        "team_memberships": getattr(request.state, "team_memberships", []),
         **(getattr(request.state, "template_context", {})),
     }

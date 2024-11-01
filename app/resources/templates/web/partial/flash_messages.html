@@ -1,11 +1,15 @@
-{% for message in flash_messages %}
-    {% if message.category == 'error' %}
-        <div class="alert alert-danger">
-            {{ message.message }}
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            {{ message.message }}
-        </div>
-    {% endif %}
-{% endfor %}
+{% if flash_messages %}
+    <div class="mb-4">
+        {% for message in flash_messages %}
+            {% if message.category == 'error' %}
+                <div class="alert alert-danger">
+                    {{ message.message }}
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    {{ message.message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

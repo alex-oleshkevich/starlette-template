@@ -1,0 +1,131 @@
+{% extends 'web/register/legal_layout.html' %}
+
+{% set product_name = settings.app_name %}
+{% set company_name = '[Your Company Name]' %}
+{% set jurisdiction = '[Your Jurisdiction]' %}
+{% set support_email = '[Your Support Email]' %}
+{% set company_address = '[Your Company Address]' %}
+{% set effective_date = '[Date]' %}
+
+{% block content %}
+    <h1>Terms and Conditions for {{ project_name }}</h1>
+
+    Effective Date: {{ effective_date }}
+    <br>
+    <br>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>
+        By accessing or using {{ product_name }} (“Service,” “we,” “us,” or “our”), you (“User,” “you,” or “your”)
+        agree to comply with and be bound by these Terms and Conditions. If you do not agree with any part of these
+        terms, you must not access or use the Service.
+    </p>
+
+    <h2>2. Description of Service</h2>
+    <p>
+        {{ product_name }} provides [brief description of the service, e.g., “”] This Service is offered on a
+        subscription basis, and features may vary based on the selected subscription plan.
+    </p>
+
+    <h2>3. User Accounts</h2>
+    <p>
+        You may need to create an account to access certain features of the Service. You are responsible for
+        maintaining
+        the confidentiality of your account credentials and for all activities under your account. You agree to
+        notify
+        us immediately of any unauthorized use of your account.
+    </p>
+
+    <h2>4. Subscription and Fees</h2>
+    <h3>4.1 Pricing</h3>
+    <p>
+        Our pricing structure is available on our website or within the Service. We reserve the right to change
+        prices
+        for any feature, subscription, or service with notice to you.
+    </p>
+
+    <h3>4.2 Payment Terms</h3>
+    <p>
+        Subscription fees are due in advance for the selected term (e.g., monthly, yearly) and are non-refundable,
+        except as required by applicable law or as expressly stated in these Terms.
+    </p>
+
+    <h2>5. User Obligations</h2>
+    <p>You agree to use the Service in compliance with all applicable laws and not to:</p>
+
+    <ul>
+        <li>Use the Service for any unlawful, fraudulent, or abusive purpose;</li>
+        <li>Interfere with the operation of the Service or disrupt other users;</li>
+        <li>Attempt to reverse engineer, decompile, or otherwise access our proprietary software code.</li>
+    </ul>
+
+    <h2>6. Intellectual Property</h2>
+    <p>
+        All content, trademarks, service marks, logos, and intellectual property associated with {{ project_name }}
+        are the property of or its licensors. You are granted a non-exclusive, non-transferable,
+        revocable license to use the Service for your internal business purposes during the term of your
+        subscription.
+    </p>
+
+    <h2>7. Data and Privacy</h2>
+    <p>
+        Your use of the Service is also governed by our Privacy Policy, which explains how we collect, use, and
+        protect
+        your information. You agree to review and accept the Privacy Policy before using the Service.
+    </p>
+
+    <h2>8. Service Modifications and Availability</h2>
+    <p>
+        We reserve the right to modify or discontinue the Service, temporarily or permanently, with or without
+        notice.
+        We are not liable to you or any third party for any modification, suspension, or discontinuation of the
+        Service.
+    </p>
+
+    <h2>9. Limitation of Liability</h2>
+    <p>
+        To the maximum extent permitted by law, {{ company_name }} shall not be liable for any direct, indirect,
+        incidental, special, or consequential damages arising from your use of, or inability to use, the Service.
+    </p>
+
+    <h2>10. Indemnification</h2>
+    <p>
+        You agree to indemnify and hold {{ company_name }} and its affiliates, officers, agents, and employees
+        harmless
+        from any claim or demand, including reasonable attorneys' fees, made by any third party due to or arising
+        from
+        your use of the Service, your violation of these Terms, or your violation of any rights of another.
+    </p>
+
+    <h2>11. Termination</h2>
+    <p>
+        We may terminate or suspend your account and access to the Service at our sole discretion, with or without
+        notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.
+        Upon termination, your right to use the Service will immediately cease.
+    </p>
+
+    <h2>12. Governing Law</h2>
+    <p>
+        These Terms shall be governed by and construed in accordance with the laws of [Your State/Country]. Any
+        legal
+        suit, action, or proceeding arising out of, or related to, these Terms or the Service shall be instituted
+        exclusively in the federal or state courts located in {{ jurisdiction }}.
+    </p>
+
+    <h2>13. Changes to Terms</h2>
+    <p>
+        We may update these Terms from time to time. Any changes will be posted on this page with an updated
+        effective
+        date, and you are encouraged to review these Terms periodically. Your continued use of the Service after any
+        changes are posted constitutes your acceptance of the new Terms.
+    </p>
+
+    <h2>14. Contact Information</h2>
+    <p>
+        For questions or concerns regarding these Terms, please contact us at:
+        <br>
+        Email: {{ support_email }}<br>
+        Address: {{ company_address }}
+
+    </p>
+{% endblock %}

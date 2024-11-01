@@ -14,6 +14,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.config import settings
+from app.config.sqla.migrations import RendersMigrationType
 from app.config.sqla.models import Base
 
 model_paths = [
@@ -21,17 +22,6 @@ model_paths = [
     *glob.glob(f"{settings.package_name}/*/models.py"),
     *glob.glob(f"{settings.package_name}/contexts/**/models.py"),
 ]
-
-
-class RendersMigrationType:
-    def render_item(self, _type: typing.Any, _obj: typing.Any, autogen_context: AutogenContext) -> str:
-        autogen_context.imports.add(self.get_import_name())
-        return self.__class__.__name__
-
-    def get_import_name(self) -> str:
-        module_name = self.__class__.__module__
-        class_name = self.__class__.__name__
-        return f"from {module_name} import {class_name}"
 
 
 def discover_models() -> None:

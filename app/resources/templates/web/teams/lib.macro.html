@@ -1,0 +1,9 @@
+{% macro team_avatar(team) %}
+    {% if team.photo %}
+        <img src="{{ team.photo }}">
+    {% else %}
+        <div class="avatar avatar-md text-white" style="background: {{ team.color_hash }}">
+            {{ team.initials }}
+        </div>
+    {% endif %}
+{% endmacro %}

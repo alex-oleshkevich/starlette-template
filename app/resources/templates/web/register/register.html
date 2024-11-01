@@ -2,24 +2,28 @@
 {% import 'lib/social.html' as social %}
 {% import 'lib/forms.html' as forms %}
 
+{% macro terms_label() %}
+    {% set terms_url = url('register_terms') %}
+    {% set privacy_url = url('register_privacy_policy') %}
+    {{ _('I agree to the <a href="{terms_url}">terms and conditions</a> and <a href="{privacy_url}">privacy policy</a>'.format(terms_url=terms_url, privacy_url=privacy_url)) | safe }}
+{% endmacro %}
+
 {% block content %}
-    <h1 class="text-xl font-medium text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-        {{ _('Sign in to your account') }}
-    </h1>
     <form class="space-y-4 md:space-y-6" action="{{ url('register') }}" method="post">
         {{ forms.form_group(form.email) }}
         {{ forms.form_group(form.first_name) }}
         {{ forms.form_group(form.last_name) }}
         {{ forms.form_group(form.password) }}
         {{ forms.form_group(form.password_confirm) }}
+        {{ forms.form_group(form.terms, label=terms_label()) }}
 
         <button type="submit" class="btn btn-primary btn-block">{{ form.submit.label.text }}</button>
-
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ _('Already have an account?') }}
-            <a href="{{ url('login') }}" class="link font-medium">
-                {{ _('Sign in instead') }}
-            </a>
-        </p>
     </form>
+{% endblock %}
+
+{% block post_content %}
+    {{ _('Already have an account?') }}
+    <a href="{{ url('login') }}" class="link font-medium">
+        {{ _('Sign in instead') }}
+    </a>
 {% endblock %}

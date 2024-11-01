@@ -12,8 +12,8 @@ class TestStaticURL:
     def test_static_url(self) -> None:
         app = Starlette(
             routes=[
-                Mount("/static", app=StaticFiles(packages=["tests.contrib"]), name="static"),
-                Mount("/custom", app=StaticFiles(packages=["tests.contrib"]), name="custom"),
+                Mount("/static", app=StaticFiles(packages=["tests.test_contrib"]), name="static"),
+                Mount("/custom", app=StaticFiles(packages=["tests.test_contrib"]), name="custom"),
             ]
         )
         http_request = RequestFactory.build(scope=RequestScopeFactory(app=app))
@@ -23,7 +23,7 @@ class TestStaticURL:
     def test_static_url_no_cache(self) -> None:
         app = Starlette(
             routes=[
-                Mount("/static", app=StaticFiles(packages=["tests.contrib"]), name="static"),
+                Mount("/static", app=StaticFiles(packages=["tests.test_contrib"]), name="static"),
             ]
         )
         http_request = RequestFactory.build(scope=RequestScopeFactory(app=app))

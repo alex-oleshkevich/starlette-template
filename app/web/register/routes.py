@@ -12,14 +12,16 @@ from starlette_babel import gettext_lazy as _
 from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
-from app.config import crypto, rate_limit
+from app.config import rate_limit
 from app.config.dependencies import CurrentUser, DbSession, Settings
 from app.config.templating import templates
 from app.contexts.auth.authentication import login_required
 from app.contexts.register.exceptions import InvalidVerificationTokenError, RegisterError
 from app.contexts.register.mails import send_email_verification_link
+from app.contexts.register.registration import register_user
 from app.contexts.register.verification import confirm_user_email, get_verified_email, make_verification_token
-from app.contexts.users.models import User
+from app.contexts.subscriptions.models import Subscription
+from app.contexts.subscriptions.repo import SubscriptionRepo
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
 from app.contrib.forms import validate_on_submit
@@ -34,13 +36,6 @@ register_rate_limit = limits.parse("3/minute")
 @routes.get_or_post("/register", name="register")
 async def register_view(request: Request, dbsession: DbSession, settings: Settings) -> Response:
     redirect_url = request.url_for("dashboard")
-    user = User(
-        timezone=str(get_timezone()),
-        language=get_locale().language,
-        email_confirmed_at=(
-            None if settings.register_require_email_confirmation else datetime.datetime.now(datetime.UTC)
-        ),
-    )
     status_code = status.HTTP_200_OK
     form = await forms.create_form(request, RegisterForm)
     headers = {}
@@ -49,8 +44,25 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
         case True:
             try:
                 await limiter.hit_or_raise(get_client_ip(request))
-                form.populate_obj(user)
-                user.password = await crypto.amake_password(form.password.data)  # type: ignore[arg-type]
+                subscription_repo = SubscriptionRepo(dbsession)
+                subscription_plan = await subscription_repo.get_default_plan()
+                if not subscription_plan:
+                    raise RegisterError(_("No subscription plan found."))
+
+                user = await register_user(
+                    dbsession,
+                    email=form.email.data,  # type: ignore[arg-type]
+                    first_name=form.first_name.data,  # type: ignore[arg-type]
+                    last_name=form.last_name.data,  # type: ignore[arg-type]
+                    plain_password=form.password.data,  # type: ignore[arg-type]
+                    language=get_locale().language,
+                    timezone=str(get_timezone()),
+                    auto_renew_subscription=True,
+                    subscription_plan=subscription_plan,
+                    subscription_status=Subscription.Status.TRIALING,
+                    subscription_duration=datetime.timedelta(days=30),
+                    auto_confirm=not settings.register_require_email_confirmation,
+                )
                 dbsession.add(user)
                 await dbsession.commit()
 
@@ -69,6 +81,10 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
                     status_code=status.HTTP_302_FOUND,
                     background=BackgroundTasks(tasks),
                 )
+            except RegisterError as ex:
+                flash(request).error(ex.message or _("An error occurred."))
+                status_code = status.HTTP_400_BAD_REQUEST
+
             except RateLimitedError as ex:
                 flash(request).error(_("Too many registration attempts. Please try again later."))
                 status_code = status.HTTP_429_TOO_MANY_REQUESTS
@@ -80,7 +96,7 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
     return templates.TemplateResponse(
         request,
         "web/register/register.html",
-        {"form": form},
+        {"form": form, "page_title": _("Register for {app_name}").format(app_name=settings.app_name)},
         status_code=status_code,
         headers=headers,
     )
@@ -129,4 +145,26 @@ async def resend_verify_email_view(request: Request, user: CurrentUser) -> Respo
     return Response(
         status_code=status.HTTP_204_NO_CONTENT,
         background=BackgroundTask(send_email_verification_link, user=user, link=verification_link),
+    )
+
+
+@routes.get("/register/privacy-policy", name="register_privacy_policy")
+async def privacy_policy_view(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request,
+        "web/register/privacy_policy.html",
+        {
+            "page_title": _("Privacy Policy"),
+        },
+    )
+
+
+@routes.get("/register/terms-of-service", name="register_terms")
+async def terms_and_conditions_view(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request,
+        "web/register/terms_and_conditions.html",
+        {
+            "page_title": _("Terms and Conditions"),
+        },
     )

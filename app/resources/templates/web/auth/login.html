@@ -2,36 +2,30 @@
 {% import 'lib/social.html' as social %}
 {% import 'lib/forms.html' as forms %}
 
-{% macro remember_me_label(field) %}
-    <div class="flex items-center justify-between">
-        {{ forms.form_label(field) }}
-        <a href="{{ url('forgot_password') }}" class="link font-medium text-sm">
-            {{ _('Forgot password?') }}
-        </a>
-    </div>
-{% endmacro %}
-
 {% block content %}
-    <h1 class="text-xl font-medium text-center leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-        {{ _('Sign in to your account') }}
-    </h1>
-    <form class="space-y-4 md:space-y-6" action="{{ request.url }}" method="post">
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 md:gap-3">
-            {{ social.google_link_button(_('Log in with Google'), url('auth.social.google').include_query_params(next=request.url|string)) }}
-        </div>
-
-        <div class="divider">{{ _('or') }}</div>
-
+    <form action="{{ request.url }}" method="post">
         {{ forms.form_group(form.email) }}
-        {{ forms.form_group(form.password, label=remember_me_label(form.password)) }}
+        {{ forms.form_group(form.password) }}
 
         <button class="btn btn-primary btn-block">{{ _('Sign in') }}</button>
 
-        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">
-            {{ _("Don’t have an account yet?") }}
-            <a href="{{ url('register') }}">
-                {{ _('Sign up') }}
-            </a>
-        </p>
+        <div class="divider my-6">{{ _('or') }}</div>
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-2 md:gap-3">
+            {{ social.google_link_button(_('Log in with Google'), url('auth.social.google').include_query_params(next=request.url|string)) }}
+        </div>
     </form>
+{% endblock %}
+
+{% block post_content %}
+    <br>
+    <a href="{{ url('forgot_password') }}" class="link font-medium">
+        {{ _('Forgot password?') }}
+    </a>
+    <br>
+    <br>
+
+    {{ _("Don’t have an account yet?") }}
+    <a href="{{ url('register') }}" class="link font-medium">
+        {{ _('Sign up') }}
+    </a>
 {% endblock %}

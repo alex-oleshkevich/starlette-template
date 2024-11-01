@@ -92,7 +92,7 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
     return templates.TemplateResponse(
         request,
         "web/auth/login.html",
-        {"form": form},
+        {"form": form, "page_title": _("Sign in into {app_name}").format(app_name=settings.app_name)},
         status_code=status_code,
         headers=headers,
     )
@@ -144,7 +144,7 @@ async def forgot_password_view(request: Request, dbsession: DbSession) -> Respon
     return templates.TemplateResponse(
         request,
         "web/auth/forgot_password.html",
-        {"form": form},
+        {"form": form, "page_title": _("Reset password")},
         status_code=status_code,
         headers=headers,
     )

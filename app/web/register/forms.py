@@ -18,4 +18,7 @@ class RegisterForm(wtforms.Form):
             wtforms.validators.equal_to("password", message=_("Passwords must match.")),
         ],
     )
+    terms = wtforms.BooleanField(
+        _("I agree to the terms and conditions"), validators=[wtforms.validators.data_required()]
+    )
     submit = wtforms.SubmitField(_("Create account"))

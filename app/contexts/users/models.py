@@ -1,5 +1,6 @@
 import datetime
 
+import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 from starlette.authentication import BaseUser
 
@@ -18,6 +19,9 @@ class User(Base, WithTimestamps, BaseUser):
     photo: Mapped[str] = mapped_column(server_default="", default="")
     language: Mapped[str] = mapped_column(server_default="en", default="en")
     timezone: Mapped[str] = mapped_column(server_default="UTC", default="UTC")
+    is_service: Mapped[bool] = mapped_column(
+        server_default=sa.false(), default=False, doc="Service accounts are used for integrations and not real users."
+    )
     last_sign_in: Mapped[DateTimeTz | None] = mapped_column(doc="Last time the user signed in.")
     disabled_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user was disabled.")
     email_confirmed_at: Mapped[DateTimeTz | None] = mapped_column(doc="Time the user confirmed their email.")

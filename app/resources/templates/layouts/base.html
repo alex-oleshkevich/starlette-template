@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ app_language }}">
+<html lang="{{ app_language }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +13,7 @@
             crossorigin="anonymous"></script>
 </head>
 
-<body class="bg-gray-50 dark:bg-gray-900">
+<body class="dark:bg-gray-900 h-full">
 {% block body %}{% endblock %}
 <script src="{{ static_url('main.js') }}"></script>
 <o-toasts></o-toasts>

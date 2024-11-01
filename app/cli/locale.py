@@ -25,7 +25,7 @@ def collect_command(domain: str) -> None:
         ]
     )
 
-    for locale in settings.i18n_locales:
+    for locale in settings.i18n_locale_codes:
         locale_file = locale_dir / locale / "LC_MESSAGES" / f"{domain}.po"
         if not locale_file.exists():
             cli.run(

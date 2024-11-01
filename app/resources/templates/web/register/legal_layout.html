@@ -1,0 +1,22 @@
+{% extends 'layouts/base.html' %}
+
+{% set product_name = settings.app_name %}
+{% set company_name = '[Your Company Name]' %}
+{% set jurisdiction = '[Your Jurisdiction]' %}
+{% set support_email = '[Your Support Email]' %}
+{% set company_address = '[Your Company Address]' %}
+{% set effective_date = '[Date]' %}
+
+{% block body %}
+    <header class="border-b border-gray-200 mb-5 px-5 py-2">
+        <div class="max-w-3xl flex items-center gap-3 mx-auto">
+            <img src="{{ static_url('public/logo.svg') }}" alt="logo" class="w-12 h-12">
+            <span class="font-medium">{{ settings.app_name }}</span>
+
+            <a href="{{ url('home') }}" class="link ml-auto">Home</a>
+        </div>
+    </header>
+    <main class="w-full md:max-w-3xl px-5 py-2 mx-auto">
+        {% block content %}{% endblock %}
+    </main>
+{% endblock %}

@@ -10,6 +10,8 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 
 from app.config.crypto import make_password
+from app.contexts.subscriptions.models import SubscriptionPlan
+from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 from tests.database import SyncSession
 
@@ -62,3 +64,40 @@ class UserFactory(BaseModelFactory):
 
     class Meta:
         model = User
+
+
+class SubscriptionPlanFactory(BaseModelFactory):
+    name: str = factory.Faker("word")
+    description: str = factory.Faker("sentence")
+    price: float = 10000
+    is_default: bool = False
+    is_archived: bool = False
+
+    class Meta:
+        model = SubscriptionPlan
+
+
+class TeamFactory(BaseModelFactory):
+    name: str = factory.Faker("company")
+    owner: User = factory.SubFactory(UserFactory)
+
+    class Meta:
+        model = Team
+
+
+class TeamRoleFactory(BaseModelFactory):
+    team: Team = factory.SubFactory(TeamFactory)
+    name: str = factory.Faker("word")
+    is_admin: bool = True
+
+    class Meta:
+        model = TeamRole
+
+
+class TeamMemberFactory(BaseModelFactory):
+    team: Team = factory.SubFactory(TeamFactory)
+    user: User = factory.SubFactory(UserFactory)
+    role: TeamRole = factory.SubFactory(TeamRoleFactory)
+
+    class Meta:
+        model = TeamMember

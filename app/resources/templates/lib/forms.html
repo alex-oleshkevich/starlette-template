@@ -2,13 +2,13 @@
     {% include 'lib/forms/input.html' %}
 {% endmacro %}
 
-{% macro form_checkbox(field) %}
+{% macro form_checkbox(field, label='') %}
     {% include 'lib/forms/checkbox.html' %}
 {% endmacro %}
 
-{% macro form_field(field) %}
+{% macro form_field(field, label='') %}
     {% if field.type == 'BooleanField' %}
-        {{ form_checkbox(field) }}
+        {{ form_checkbox(field, label=label) }}
     {% else %}
         {{ form_input(field) }}
     {% endif %}
@@ -29,12 +29,12 @@
 {% macro form_group(field, label='') %}
     <div class="form-group">
         {% if field.type == 'BooleanField' %}
-            {% if label %}{{ label }}{% endif %}
+            {{ form_field(field, label=label) }}
         {% else %}
             {{ label or form_label(field) }}
+            {{ form_field(field) }}
         {% endif %}
 
-        {{ form_field(field) }}
         {% if field.description -%}
             {{- form_help(field) }}
         {%- endif %}

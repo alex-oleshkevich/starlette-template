@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
+# Run unit tests with coverage.
+
 set -e
 
-export APP_ENV=unittest
-export APP_DEBUG=1
-
-pytest --cov-report term --cov-report html --cov=app $@
+DIRNAME=$(dirname $BASH_SOURCE[0])
+$DIRNAME/test.sh --cov-report term --cov-report html --cov=app --cov=tests $@

@@ -50,6 +50,7 @@ repos:
                     - async-storages[s3]
                     - click
                     - cryptography
+                    - colorhash
                     - factory-boy
                     - jinja2
                     - limits[async-redis]

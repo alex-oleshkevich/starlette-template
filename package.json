@@ -8,6 +8,7 @@
         "build": "npm run tailwind:build && npm run esbuild:build"
     },
     "dependencies": {
+        "@floating-ui/dom": "^1.6.12",
         "esbuild": "0.24.0",
         "esbuild-copy-static-files": "0.1.0",
         "flowbite": "^2.5.2",

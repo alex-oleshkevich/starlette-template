@@ -1,6 +1,7 @@
 import datetime
 
 import sqlalchemy as sa
+from colorhash import ColorHash
 from sqlalchemy.orm import Mapped, mapped_column
 from starlette.authentication import BaseUser
 
@@ -52,6 +53,14 @@ class User(Base, WithTimestamps, BaseUser):
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         return self.email
+
+    @property
+    def color_hash(self) -> str:
+        return ColorHash(self.display_name).hex
+
+    @property
+    def initials(self) -> str:
+        return "".join(part[0] for part in self.display_name.split()[:2]).upper()
 
     def deactivate(self) -> None:
         self.deleted_at = datetime.datetime.now(datetime.UTC)

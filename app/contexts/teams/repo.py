@@ -34,6 +34,7 @@ class TeamMemberRepo(Repo[TeamMember]):
         .options(
             joinedload(TeamMember.team),
             joinedload(TeamMember.user),
+            joinedload(TeamMember.role),
         )
         .where(
             TeamMember.disabled_at.is_(None),

@@ -1,6 +1,6 @@
 @layer components {
     :root {
-        --sidebar-width: theme('width.64');
+        --sidebar-width: 280px;
     }
 
     body {
@@ -8,27 +8,27 @@
     }
 
     h1 {
-        @apply text-3xl font-semibold mb-2;
+        @apply text-3xl font-semibold mb-3;
     }
 
     h2 {
-        @apply text-2xl font-semibold mb-2;
+        @apply text-2xl font-semibold mb-3;
     }
 
     h3 {
-        @apply text-xl font-semibold mb-2;
+        @apply text-xl font-semibold mb-3;
     }
 
     h4 {
-        @apply text-lg font-semibold mb-2;
+        @apply text-lg font-semibold mb-3;
     }
 
     h5 {
-        @apply text-base font-semibold mb-2;
+        @apply text-base font-semibold mb-3;
     }
 
     h6 {
-        @apply text-sm font-semibold mb-2;
+        @apply text-sm font-semibold mb-3;
     }
 
     p {
@@ -39,17 +39,10 @@
         @apply mb-4;
     }
 
-    .drawer {
-        width: var(--sidebar-width);
-        @apply fixed top-0 left-0 z-40 md:w-64 h-screen transition-transform -translate-x-full sm:translate-x-0;
-    }
-
-    .drawer-trigger {
-        @apply inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600;
-    }
-
     .sidebar {
-        @apply h-full px-3 py-4 overflow-y-auto flex flex-col bg-white border-r border-gray-200;
+        width: var(--sidebar-width);
+        @apply h-full px-3 py-4 flex flex-col bg-gray-50 border-r border-gray-200;
+        @apply fixed top-0 left-0 z-40 h-screen transition-transform -translate-x-full sm:translate-x-0;
         @apply dark:bg-gray-800 dark:border-gray-700;
     }
 
@@ -58,11 +51,13 @@
     }
 
     .sidebar-menu-item {
-        @apply flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 w-full justify-start text-left;
+        @apply flex items-center p-2 text-gray-900 rounded-lg  w-full justify-start text-left gap-2;
+        @apply hover:bg-gray-200;
+        @apply dark:text-white dark:hover:bg-gray-700;
     }
 
     .sidebar-menu-item svg:first-child {
-        @apply w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white;
+        @apply w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white;
     }
 
     .sidebar > hr {
@@ -70,7 +65,7 @@
     }
 
     .btn {
-        @apply py-2.5 px-5 text-sm transition-colors font-medium focus:outline-none rounded-lg flex justify-center items-center gap-2;
+        @apply py-2.5 px-5 text-sm transition-colors font-medium focus:outline-none rounded-md flex justify-center items-center gap-2;
         @apply text-gray-900 bg-white border border-gray-200;
         @apply hover:bg-gray-100 hover:text-gray-700;
         @apply focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700;
@@ -192,7 +187,7 @@
     }
 
     .card {
-        @apply bg-white dark:bg-gray-900 p-10 space-y-4 border border-gray-200 rounded-md;
+        @apply bg-white dark:bg-gray-900 space-y-4;
     }
 
     .card header h2 {
@@ -221,5 +216,24 @@
 
     .avatar-xl {
         @apply w-36 h-36;
+    }
+
+    .dropdown {
+        width: 300px;
+        z-index: 99999;
+        @apply absolute shadow-lg;
+    }
+
+    .list-menu {
+        @apply bg-white w-full py-1;
+    }
+
+    .list-menu > a,
+    .list-menu > button {
+        @apply px-4 py-2 text-sm text-gray-900 flex items-center gap-2 w-full font-medium;
+        @apply hover:bg-gray-100 hover:no-underline;
+        @apply active:bg-gray-200;
+        @apply dark:hover:bg-gray-800 dark:text-white;
+
     }
 }

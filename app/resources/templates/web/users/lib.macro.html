@@ -1,0 +1,9 @@
+{% macro user_avatar(user) %}
+    {% if user.photo %}
+        <img src="{{ user.photo }}">
+    {% else %}
+        <div class="avatar avatar-md text-white" style="background: {{ user.color_hash }}">
+            {{ user.initials }}
+        </div>
+    {% endif %}
+{% endmacro %}

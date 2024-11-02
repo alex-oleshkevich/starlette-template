@@ -3,5 +3,5 @@ import enum
 
 class Environment(enum.StrEnum):
     LOCAL = "local"
-    PROD = "production"
+    PRODUCTION = "production"
     UNITTEST = "unittest"

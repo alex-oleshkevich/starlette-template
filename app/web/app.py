@@ -31,7 +31,7 @@ web_router = Router(
             lifetime=settings.session_lifetime,
             store=session_backend,
             cookie_path="/",
-            cookie_https_only=settings.app_env != Environment.UNITTEST,
+            cookie_https_only=settings.app_env == Environment.PRODUCTION,
         ),
         Middleware(SessionAutoloadMiddleware),
         Middleware(

@@ -39,11 +39,37 @@
         @apply mb-4;
     }
 
+    @keyframes sidebar {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    .drawer {
+        @apply w-[var(--sidebar-width)];
+        @apply fixed top-0 left-0 z-40 bottom-0 transition-transform -translate-x-full sm:translate-x-0 hidden md:block;
+    }
+
+    .drawer.open {
+        --sidebar-width: 90vw;
+        @apply flex translate-x-0 w-full bg-gray-900/50;
+    }
+
+    .drawer.open .sidebar {
+        animation: cubic-bezier(.36,-0.01,0,.77) sidebar 0.25s;
+    }
+
     .sidebar {
-        width: var(--sidebar-width);
-        @apply h-full px-3 py-4 flex flex-col bg-gray-50 border-r border-gray-200;
-        @apply fixed top-0 left-0 z-40 h-screen transition-transform -translate-x-full sm:translate-x-0;
+        @apply w-[80vw] md:w-[var(--sidebar-width)];
+        @apply h-full px-3 py-4 flex-col bg-gray-50 border-r border-gray-200 flex space-y-5;
         @apply dark:bg-gray-800 dark:border-gray-700;
+    }
+
+    .sidebar main {
+        @apply flex-grow overflow-y-auto;
     }
 
     .sidebar-menu {
@@ -65,11 +91,19 @@
     }
 
     .btn {
-        @apply py-2.5 px-5 text-sm transition-colors font-medium focus:outline-none rounded-md flex justify-center items-center gap-2;
-        @apply text-gray-900 bg-white border border-gray-200;
+        @apply py-2 px-4 text-sm transition-colors font-medium focus:outline-none rounded-md flex justify-center items-center gap-2;
+        @apply text-gray-900 bg-white border border-gray-200 leading-6;
         @apply hover:bg-gray-100 hover:text-gray-700;
         @apply focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700;
         @apply dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700
+    }
+
+    .btn-square {
+        @apply rounded-md px-2 py-2;
+    }
+
+    .btn-rounded {
+        @apply rounded-full px-2 py-2;
     }
 
     .btn-primary {
@@ -116,7 +150,7 @@
     select,
     textarea,
     .form-control {
-        @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5;
+        @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full py-2 px-4 leading-6;
         @apply focus:ring-blue-500 focus:border-blue-500;
         @apply dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
     }

@@ -20,6 +20,7 @@ from app.config.settings import Config
 from app.contexts.subscriptions.models import SubscriptionPlan
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
+from app.contrib.storage import StorageType
 from tests import database
 from tests.factories import (
     RequestFactory,
@@ -32,8 +33,11 @@ from tests.factories import (
 )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def settings() -> Config:
+    assert app_settings.storages_type == StorageType.MEMORY, "File storage must be in-memory for tests"
+    assert app_settings.database_url.endswith("_test"), 'Database URL must contain "_test" to prevent data loss'
+
     return app_settings
 
 
@@ -57,7 +61,6 @@ def _switch_language() -> typing.Generator[None, None, None]:
 
 @pytest.fixture
 async def dbsession(settings: Config) -> typing.AsyncGenerator[AsyncSession, None]:
-    assert "_test" in settings.database_url, 'Database URL must contain "_test" to prevent data loss'
     async with new_dbsession() as dbsession:
         yield dbsession
 

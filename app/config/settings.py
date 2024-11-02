@@ -117,7 +117,7 @@ class TestConfig(Config):
     database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"
     mail_url: str = "memory://"
     cache_url: str = "memory://"
-    file_storage_type: StorageType = StorageType.MEMORY
+    storages_type: StorageType = StorageType.MEMORY
 
 
 settings = TestConfig() if IS_TEST else Config()

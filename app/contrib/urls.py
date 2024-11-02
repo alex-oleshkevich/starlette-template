@@ -25,6 +25,8 @@ def media_url(request: Request, path: str) -> URL:
     If path is absolute, return it as is."""
     if path.startswith(("http://", "https://")):
         return URL(path)
+    if path == "":
+        return URL("")
     return request.url_for("media", path=path)
 
 

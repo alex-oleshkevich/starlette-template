@@ -1,0 +1,14 @@
+{% extends 'web/teams/settings_layout.html' %}
+{% import 'lib/forms.html' as forms with context %}
+
+{% block page %}
+    <div class="md:max-w-2xl">
+        <form method="post" action="{{ request.url }}" hx-post="{{ request.url }}" enctype="multipart/form-data">
+            <div class="grid md:grid-cols-1">
+                {{ forms.form_group(form.name) }}
+                {{ forms.form_group(form.photo) }}
+            </div>
+            <button class="btn btn-primary">{{ _('Update') }}</button>
+        </form>
+    </div>
+{% endblock %}

@@ -104,6 +104,12 @@ class HXResponse(Response):
     ) -> typing.Self:
         return toast(self, str(message), category, stage=stage)
 
+    def success_toast(self, message: str) -> typing.Self:
+        return self.toast(message, "success")
+
+    def error_toast(self, message: str) -> typing.Self:
+        return self.toast(message, "error")
+
     def close_modal(self) -> typing.Self:
         return close_modal(self)
 

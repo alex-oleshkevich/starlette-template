@@ -1,0 +1,12 @@
+{% extends 'layouts/app.html' %}
+
+{% block content %}
+    <nav class="tabs">
+        <a href="{{ url('teams.settings') }}" class="{{ css_classes(active=pathname_matches('teams.settings')) }}">
+            {{ _('General') }}
+        </a>
+        <a href="#">{{ _('Members') }}</a>
+        <a href="#">{{ _('Subscription') }}</a>
+    </nav>
+    {% block page %}{% endblock %}
+{% endblock %}

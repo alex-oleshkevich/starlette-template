@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
+from app.config.files import file_storage
+from app.contexts.teams.models import Team
 from app.contexts.users.models import User
 from tests.factories import TeamFactory, TeamMemberFactory, TeamRoleFactory, UserFactory
 
@@ -29,3 +31,43 @@ class TestTeamSelector:
         assert response.status_code == 200
         assert response.cookies.get("team_id", path="/") is None
         assert "Invalid team." in response.text
+
+
+class TestGeneralSettings:
+    def test_page_accessible(self, auth_client: TestClient) -> None:
+        response = auth_client.get("/app/teams/settings")
+        assert response.status_code == 200
+
+    async def test_update_info(self, auth_client: TestClient, team: Team, dbsession_sync: Session) -> None:
+        response = auth_client.post(
+            "/app/teams/settings",
+            data={
+                "name": "Team Name",
+            },
+            files={
+                "photo": ("logo.jpg", b"content", "image/jpeg"),
+            },
+        )
+        assert response.status_code == 204
+
+        dbsession_sync.refresh(team)
+        assert team.name == "Team Name"
+        assert team.photo == f"teams/{team.id}/logo.jpg"
+        assert await file_storage.exists(f"teams/{team.id}/logo.jpg")
+
+    async def test_remove_logo(self, auth_client: TestClient, team: Team, dbsession_sync: Session) -> None:
+        team.photo = "teams/1/logo.jpg"
+        await file_storage.write("teams/1/logo.jpg", b"content")
+        dbsession_sync.commit()
+
+        response = auth_client.post(
+            "/app/teams/settings",
+            data={
+                "photo_clear": "y",
+            },
+        )
+        assert response.status_code == 204
+
+        dbsession_sync.refresh(team)
+        assert team.photo is None
+        assert not await file_storage.exists(f"teams/{team.id}/logo.jpg")

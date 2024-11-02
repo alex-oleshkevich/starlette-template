@@ -41,7 +41,7 @@ def file_storage_factory(settings: StorageConfig) -> FileStorage:
         assert settings.local_url_prefix
         return FileStorage(
             FileSystemBackend(
-                mkdirs=False,
+                mkdirs=True,
                 mkdir_exists_ok=True,
                 mkdir_permissions=0o777,
                 base_dir=settings.local_dir,

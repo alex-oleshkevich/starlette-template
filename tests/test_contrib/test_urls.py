@@ -38,6 +38,9 @@ class TestMediaURL:
     def test_media_url(self, http_request: Request) -> None:
         assert str(media_url(http_request, "file.txt")).startswith("http://testserver/media/file.txt")
 
+    def test_media_url_empty_path(self, http_request: Request) -> None:
+        assert str(media_url(http_request, "")) == ""
+
     @pytest.mark.parametrize("path", ["http://test.tld/file.txt", "https://test.tld/file.txt"])
     def test_media_url_with_http_host(self, http_request: Request, path: str) -> None:
         assert str(media_url(http_request, path)).startswith(path)

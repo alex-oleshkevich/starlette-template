@@ -4,8 +4,12 @@ from starlette_babel import gettext_lazy as _
 from starlette_dispatch import RouteGroup
 from starlette_flash import flash
 
+from app.config.dependencies import CurrentTeam, DbSession, Files
 from app.config.templating import templates
+from app.contrib import forms, htmx
+from app.contrib.forms import create_form
 from app.contrib.urls import safe_referer
+from app.web.teams.forms import GeneralSettingsForm
 
 routes = RouteGroup()
 
@@ -29,3 +33,27 @@ async def select_team_view(request: Request) -> Response:
             return response
 
     return templates.TemplateResponse(request, "web/teams/select.html", {"page_title": _("Select Team")})
+
+
+@routes.get_or_post("/teams/settings", name="teams.settings")
+async def settings_view(request: Request, dbsession: DbSession, team: CurrentTeam, files: Files) -> Response:
+    form = await create_form(request, GeneralSettingsForm, obj=team)
+    if await forms.validate_on_submit(request, form):
+        if form.photo.clear:
+            if team.photo:
+                await files.delete(team.photo)
+            form.photo.data = None
+
+        if form.photo.is_uploaded:
+            form.photo.data = await files.upload(
+                form.photo.data, "teams/{team_id}/logo.{extension}", extra_tokens=dict(team_id=team.id)
+            )
+
+        form.populate_obj(team)
+
+        await dbsession.commit()
+        return htmx.response().success_toast(_("Team has been updated."))
+
+    return templates.TemplateResponse(
+        request, "web/teams/settings_general.html", {"page_title": _("Team Settings"), "form": form}
+    )

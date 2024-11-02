@@ -6,9 +6,15 @@
     {% include 'lib/forms/checkbox.html' %}
 {% endmacro %}
 
+{% macro form_image(field, label='') %}
+    {% include 'lib/forms/input_image.html' %}
+{% endmacro %}
+
 {% macro form_field(field, label='') %}
     {% if field.type == 'BooleanField' %}
         {{ form_checkbox(field, label=label) }}
+    {% elif field.type == 'PhotoField' %}
+        {{ form_image(field, label=label) }}
     {% else %}
         {{ form_input(field) }}
     {% endif %}

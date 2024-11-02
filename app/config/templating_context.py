@@ -1,12 +1,18 @@
 import functools
 import typing
 
+from markupsafe import Markup
 from starlette.requests import Request
 from starlette_babel.locale import get_language
 from starlette_flash import flash
 
 from app.config import settings
 from app.contrib.urls import abs_url_for, media_url, pathname_matches, static_url, url_matches
+
+
+def css_classes(**classes: bool) -> str:
+    """Generate a string of CSS classes."""
+    return Markup(" ".join(name for name, enabled in classes.items() if enabled))
 
 
 def app_processor(request: Request) -> dict[str, typing.Any]:
@@ -23,6 +29,7 @@ def app_processor(request: Request) -> dict[str, typing.Any]:
         "app_theme": request.cookies.get("theme", "light"),
         "app_language": get_language(),
         "user": request.user,
+        "css_classes": css_classes,
         "team": getattr(request.state, "team", None),
         "team_member": getattr(request.state, "team_member", None),
         "team_memberships": getattr(request.state, "team_memberships", []),

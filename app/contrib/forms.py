@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 import wtforms
@@ -55,13 +57,13 @@ class PhotoField(wtforms.FileField):
         self.clear_input.process_data(value=False)
 
     @property
-    def value(self) -> str:
-        return self.data if isinstance(self.data, str) else ""
-
-    @property
     def clear(self) -> bool:
         return self.clear_input.data
 
     @property
     def is_uploaded(self) -> bool:
         return isinstance(self.data, UploadFile)
+
+    @property
+    def value(self) -> str:
+        return self.data if isinstance(self.data, str) else ""

@@ -155,6 +155,7 @@ async def accept_invite_view(
     team_member = await repo.accept_invitation(user, invitation)
     await dbsession.commit()
 
+    flash(request).success(_("Welcome to the {team}!").format(team=team_member.team))
     redirect_url = safe_referer(request, request.query_params.get("next", request.url_for("dashboard")))
     redirect_url = redirect_url.include_query_params(team_id=team_member.team_id)
     return RedirectResponse(

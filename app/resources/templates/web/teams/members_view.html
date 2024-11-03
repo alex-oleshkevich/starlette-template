@@ -1,0 +1,29 @@
+{% import 'web/teams/lib.macro.html' as teams %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>{{ _('Member') }}</th>
+        <th>{{ _('Role') }}</th>
+        <th>{{ _('Status') }}</th>
+        <th>{{ _('Actions') }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for member in members %}
+        <tr>
+            <td>
+                {{ member }}
+                {% if member.team.owner == user %}
+                    <span class="badge badge-blue ms-2">{{ _('Owner') }}</span>
+                {% endif %}
+            </td>
+            <td>{{ member.role }}</td>
+            <td>
+                {{ teams.member_status(member) }}
+            </td>
+            <td></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

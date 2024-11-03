@@ -7,3 +7,16 @@
         </div>
     {% endif %}
 {% endmacro %}
+
+
+{% macro member_status(member) %}
+    <div class="inline-flex gap-1 items-center">
+        {% if member.is_suspended %}
+            <span class="status status-red"></span>
+            <span>{{ _('Suspended') }}</span>
+        {% else %}
+            <span class="status status-green"></span>
+            <span>{{ _('Active') }}</span>
+        {% endif %}
+    </div>
+{% endmacro %}

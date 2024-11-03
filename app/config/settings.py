@@ -94,8 +94,8 @@ class Config(BaseSettings):
     encryption_key: str = ""
 
     # session settings
+    session_cookie: str = "session"
     session_lifetime: datetime.timedelta = datetime.timedelta(days=14)
-    session_remember_lifetime: datetime.timedelta = datetime.timedelta(days=60)
 
     # registration
     register_auto_login: bool = True
@@ -104,6 +104,9 @@ class Config(BaseSettings):
     # google login
     google_client_id: str = ""
     google_client_secret: str = ""
+
+    # teams
+    team_cookie: str = "team_id"
 
 
 class TestConfig(Config):

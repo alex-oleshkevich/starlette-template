@@ -98,7 +98,7 @@
                                 {{ _('My Profile') }}
                             </a>
                             {% if team_memberships|length > 1 %}
-                                <a href="{{ url('team.select') }}">{{ _('Change team') }}</a>
+                                <a href="{{ url('teams.select') }}">{{ _('Change team') }}</a>
                             {% endif %}
                             <button formmethod="post" formaction="{{ url('logout') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"

@@ -1,8 +1,8 @@
 """teams
 
-Revision ID: 0f95e587bc05
-Revises: 8ee4acd59999
-Create Date: 2024-10-29 19:55:55.453213
+Revision ID: ff6539c20a9e
+Revises: 9223d07a31d3
+Create Date: 2024-11-03 17:18:11.898633
 
 """
 
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "0f95e587bc05"
-down_revision = "8ee4acd59999"
+revision = "ff6539c20a9e"
+down_revision = "9223d07a31d3"
 branch_labels = None
 depends_on = None
 
@@ -23,8 +23,10 @@ def upgrade() -> None:
         "teams",
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(), nullable=False),
-        sa.Column("photo", sa.String(), nullable=True),
+        sa.Column("logo", sa.String(), nullable=True),
         sa.Column("owner_id", sa.BigInteger(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(
             ["owner_id"],
             ["users.id"],
@@ -37,6 +39,8 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("team_id", sa.BigInteger(), nullable=False),
         sa.Column("is_admin", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(
             ["team_id"],
             ["teams.id"],
@@ -47,10 +51,12 @@ def upgrade() -> None:
         "team_members",
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column("is_service", sa.Boolean(), server_default=sa.text("false"), nullable=False),
-        sa.Column("disabled_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("suspended_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("team_id", sa.BigInteger(), nullable=False),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("role_id", sa.BigInteger(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(
             ["role_id"],
             ["team_roles.id"],
@@ -74,6 +80,8 @@ def upgrade() -> None:
         sa.Column("team_id", sa.BigInteger(), nullable=False),
         sa.Column("role_id", sa.BigInteger(), nullable=False),
         sa.Column("inviter_id", sa.BigInteger(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(
             ["inviter_id"],
             ["team_members.id"],
@@ -87,6 +95,8 @@ def upgrade() -> None:
             ["teams.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("team_id", "email"),
+        sa.UniqueConstraint("team_id", "token"),
     )
     # ### end Alembic commands ###
 

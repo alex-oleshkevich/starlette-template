@@ -1,9 +1,15 @@
 from __future__ import annotations
 
+import datetime
+import uuid
+
 import sqlalchemy as sa
 from colorhash import ColorHash
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from starlette.datastructures import URL
+from starlette.requests import Request
 
+from app.config import crypto
 from app.config.sqla.columns import DateTimeTz, IntPk
 from app.config.sqla.models import Base, WithTimestamps
 from app.contexts.users.models import User
@@ -17,7 +23,7 @@ class Team(Base, WithTimestamps):
 
     id: Mapped[IntPk]
     name: Mapped[str] = mapped_column()
-    photo: Mapped[str | None] = mapped_column()
+    logo: Mapped[str | None] = mapped_column()
     owner_id: Mapped[int] = mapped_column(sa.ForeignKey("users.id"))
 
     owner: Mapped[User] = relationship(User)
@@ -74,8 +80,7 @@ class TeamMember(Base, WithTimestamps):
         server_default=sa.false(),
         doc="Service accounts are used for integrations and not real users.",
     )
-    # FIXME: suspended_at: Mapped[DateTimeTz|None] = mapped_column()
-    disabled_at: Mapped[DateTimeTz | None] = mapped_column()
+    suspended_at: Mapped[DateTimeTz | None] = mapped_column()
     team_id: Mapped[int] = mapped_column(sa.ForeignKey("teams.id"))
     user_id: Mapped[int] = mapped_column(sa.ForeignKey("users.id"))
     role_id: Mapped[int] = mapped_column(sa.ForeignKey("team_roles.id"))
@@ -87,15 +92,37 @@ class TeamMember(Base, WithTimestamps):
         "TeamInvite", cascade="all, delete-orphan", back_populates="inviter"
     )
 
+    def suspend(self) -> None:
+        self.suspended_at = datetime.datetime.now(datetime.UTC)
+
+    def __str__(self) -> str:
+        return str(self.user)
+
+
+class InvitationToken:
+    def __init__(self) -> None:
+        self.plain_token = str(uuid.uuid4().hex)
+
+    @property
+    def hashed_token(self) -> str:
+        return crypto.hash_value(self.plain_token)
+
+    def make_url(self, request: Request) -> URL:
+        return request.url_for("teams.members.accept_invite", token=self.plain_token)
+
 
 class TeamInvite(Base, WithTimestamps):
     """A team invite is a pending invitation to join a team."""
 
     __tablename__ = "team_invites"
+    __table_args__ = (
+        sa.UniqueConstraint("team_id", "email"),
+        sa.UniqueConstraint("team_id", "token"),
+    )
 
     id: Mapped[IntPk]
-    email: Mapped[str] = mapped_column()
-    token: Mapped[str] = mapped_column()
+    email: Mapped[str]
+    token: Mapped[str] = mapped_column(doc="Hashed token to verify the invite.")
     team_id: Mapped[int] = mapped_column(sa.ForeignKey("teams.id"))
     role_id: Mapped[int] = mapped_column(sa.ForeignKey("team_roles.id"))
     inviter_id: Mapped[int] = mapped_column(sa.ForeignKey("team_members.id"))
@@ -103,3 +130,6 @@ class TeamInvite(Base, WithTimestamps):
     team: Mapped[Team] = relationship(Team, back_populates="invites")
     role: Mapped[TeamRole] = relationship(TeamRole, back_populates="invites")
     inviter: Mapped[TeamMember] = relationship(TeamMember, back_populates="invites")
+
+    def __str__(self) -> str:
+        return self.email

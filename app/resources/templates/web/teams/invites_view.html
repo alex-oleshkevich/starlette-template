@@ -1,0 +1,27 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th>{{ _('Member') }}</th>
+        <th>{{ _('Role') }}</th>
+        <th>{{ _('Sent at') }}</th>
+        <th>{{ _('Actions') }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for invite in invites %}
+        <tr>
+            <td>{{ invite.email }}</td>
+            <td>{{ invite.role }}</td>
+            <td>
+                {{ invite.created_at|datetime }}
+            </td>
+            <td>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="999" class="text-center text-muted">{{ _('No invitations sent') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

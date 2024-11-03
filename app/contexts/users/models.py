@@ -4,12 +4,13 @@ import sqlalchemy as sa
 from colorhash import ColorHash
 from sqlalchemy.orm import Mapped, mapped_column
 from starlette.authentication import BaseUser
+from starlette_auth.authentication import HasSessionAuthHash
 
 from app.config.sqla.columns import DateTimeTz, IntPk
 from app.config.sqla.models import Base, WithTimestamps
 
 
-class User(Base, WithTimestamps, BaseUser):
+class User(Base, WithTimestamps, BaseUser, HasSessionAuthHash):
     __tablename__ = "users"
 
     id: Mapped[IntPk]

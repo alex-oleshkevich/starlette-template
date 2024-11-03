@@ -49,3 +49,9 @@
         {%- endif %}
     </div>
 {% endmacro %}
+
+{% macro render(form) %}
+    {% for field in form %}
+        {{ form_group(field) }}
+    {% endfor %}
+{% endmacro %}

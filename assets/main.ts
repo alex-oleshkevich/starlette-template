@@ -1,9 +1,9 @@
 import 'flowbite';
-import { toasts } from './components';
+import { toasts, modals } from './components';
 import { theme } from './theme';
 
 const app = {
-    toasts, theme,
+    toasts, theme, modals,
 };
 
 declare global {

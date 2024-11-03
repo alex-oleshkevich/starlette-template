@@ -1,17 +1,24 @@
+from sqlalchemy.exc import IntegrityError
+from starlette import status
+from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette_babel import gettext_lazy as _
-from starlette_dispatch import RouteGroup
+from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
-from app.config.dependencies import CurrentTeam, DbSession, Files
+from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser, DbSession, Files
 from app.config.templating import templates
+from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
+from app.contexts.teams.models import InvitationToken, TeamInvite
+from app.contexts.teams.repo import TeamRepo
 from app.contrib import forms, htmx
 from app.contrib.forms import create_form
-from app.contrib.urls import safe_referer
-from app.web.teams.forms import GeneralSettingsForm
+from app.contrib.urls import redirect_later, safe_referer
+from app.web.teams.forms import GeneralSettingsForm, InviteForm
 
 routes = RouteGroup()
+team_invitation_public_routes = RouteGroup()
 
 
 @routes.get_or_post("/teams/select", name="teams.select")
@@ -39,14 +46,14 @@ async def select_team_view(request: Request) -> Response:
 async def settings_view(request: Request, dbsession: DbSession, team: CurrentTeam, files: Files) -> Response:
     form = await create_form(request, GeneralSettingsForm, obj=team)
     if await forms.validate_on_submit(request, form):
-        if form.photo.clear:
-            if team.photo:
-                await files.delete(team.photo)
-            form.photo.data = None
+        if form.logo.clear:
+            if team.logo:
+                await files.delete(team.logo)
+            form.logo.data = None
 
-        if form.photo.is_uploaded:
-            form.photo.data = await files.upload(
-                form.photo.data, "teams/{team_id}/logo.{extension}", extra_tokens=dict(team_id=team.id)
+        if form.logo.is_uploaded:
+            form.logo.data = await files.upload(
+                form.logo.data, "teams/{team_id}/logo.{extension}", extra_tokens=dict(team_id=team.id)
             )
 
         form.populate_obj(team)
@@ -56,4 +63,102 @@ async def settings_view(request: Request, dbsession: DbSession, team: CurrentTea
 
     return templates.TemplateResponse(
         request, "web/teams/settings_general.html", {"page_title": _("Team Settings"), "form": form}
+    )
+
+
+@routes.get_or_post("/teams/members", name="teams.members")
+async def members_view(request: Request, dbsession: DbSession, team: CurrentTeam) -> Response:
+    repo = TeamRepo(dbsession)
+    members = await repo.get_team_members(team.id)
+    invites = await repo.get_invites(team.id)
+    return templates.TemplateResponse(
+        request, "web/teams/members.html", {"page_title": _("Members"), "members": members, "invites": invites}
+    )
+
+
+@routes.get_or_post("/teams/members/invite", name="teams.members.invite")
+async def invite_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
+    repo = TeamRepo(dbsession)
+    roles = await repo.get_roles(team_member.team.id)
+    form = await create_form(request, InviteForm)
+    form.setup(roles)
+    status_code = status.HTTP_200_OK
+    if await forms.validate_on_submit(request, form):
+        emails = [email.strip() for email in form.email.data.split(",") if email.strip()]  # type: ignore[union-attr]
+        role = await repo.get_role(team_member.team.id, form.role.data)
+        if not role:
+            return htmx.response().error_toast(_("Invalid role.")).close_modal()
+
+        tasks: list[BackgroundTask] = []
+
+        for email in emails:
+            token = InvitationToken()
+            link = token.make_url(request)
+            invite = TeamInvite(
+                email=email,
+                role=role,
+                inviter=team_member,
+                team=team_member.team,
+                token=token.hashed_token,
+            )
+            dbsession.add(invite)
+            tasks.append(BackgroundTask(send_team_invitation_email, invite, link))
+
+        try:
+            await dbsession.commit()
+        except IntegrityError:
+            status_code = status.HTTP_400_BAD_REQUEST
+            form.email.errors = [*form.email.errors, _("One or more of the emails you entered is already invited.")]
+        else:
+            return (
+                htmx.response(
+                    background=BackgroundTasks(tasks),
+                )
+                .success_toast(_("Invites have been sent."))
+                .close_modal()
+            )
+
+    return templates.TemplateResponse(request, "web/teams/invite_form.html", {"form": form}, status_code=status_code)
+
+
+@routes.get_or_post("/teams/roles", name="teams.roles")
+async def roles_view(request: Request, dbsession: DbSession, team: CurrentTeam) -> Response:
+    repo = TeamRepo(dbsession)
+    members = await repo.get_team_members(team.id)
+    return templates.TemplateResponse(request, "web/teams/members.html", {"page_title": _("Roles"), "members": members})
+
+
+@team_invitation_public_routes.get("/teams/members/accept-invite/{token}", name="teams.members.accept_invite")
+async def accept_invite_view(
+    request: Request,
+    dbsession: DbSession,
+    user: CurrentUser,
+    token: FromPath[str],
+) -> Response:
+    if not user.is_authenticated:
+        redirect_later(request, request.url)
+        return RedirectResponse(request.url_for("register"), status_code=status.HTTP_302_FOUND)
+
+    repo = TeamRepo(dbsession)
+    invitation = await repo.get_invite_by_token(token)
+    if not invitation:
+        return templates.TemplateResponse(
+            request,
+            "web/service/message.html",
+            {
+                "page_title": _("Invalid or expired invitation"),
+                "message": _("The invitation you are trying to accept is invalid or has expired."),
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    team_member = await repo.accept_invitation(user, invitation)
+    await dbsession.commit()
+
+    redirect_url = safe_referer(request, request.query_params.get("next", request.url_for("dashboard")))
+    redirect_url = redirect_url.include_query_params(team_id=team_member.team_id)
+    return RedirectResponse(
+        redirect_url,
+        background=BackgroundTask(send_team_member_joined_email, invitation, team_member),
+        status_code=status.HTTP_302_FOUND,
     )

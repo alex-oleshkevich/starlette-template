@@ -10,7 +10,9 @@ from app.config.crypto import (
     averify_password,
     decrypt_value,
     encrypt_value,
+    hash_value,
     make_password,
+    verify_hashed_value,
     verify_password,
 )
 
@@ -56,3 +58,11 @@ async def test_encryption_async() -> None:
 def test_encryption_with_key_from_settings() -> None:
     data = b"hello, world!"
     assert decrypt_value(encrypt_value(data)) == data
+
+
+def test_hash_value() -> None:
+    hashed = hash_value(b"hello, world!")
+    assert verify_hashed_value(hashed, b"hello, world!")
+
+    hashed = hash_value("hello, world!")
+    assert verify_hashed_value(hashed, "hello, world!")

@@ -88,7 +88,7 @@ def test_registration_with_valid_data_without_autologin(
         },
     )
     assert response.status_code == 302
-    assert response.headers["location"] == "http://testserver/app/"
+    assert response.headers["location"] == "http://testserver/login"
 
     response = client.get("/login", follow_redirects=False)
     assert response.status_code == 200

@@ -54,3 +54,15 @@ def safe_referer(request: Request, url: str | URL) -> URL:
     ):
         return URL("/")
     return URL(redirect_url)
+
+
+def resolve_redirect_url(request: Request, fallback: URL) -> URL:
+    if redirect_url := request.session.pop("__redirect_url__", None):
+        return safe_referer(request, redirect_url)
+    if request.query_params.get("next"):
+        return safe_referer(request, request.query_params["next"])
+    return fallback
+
+
+def redirect_later(request: Request, url: str | URL) -> None:
+    request.session["__redirect_url__"] = str(url)

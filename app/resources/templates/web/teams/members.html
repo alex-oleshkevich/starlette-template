@@ -1,0 +1,25 @@
+{% extends 'web/teams/settings_layout.html' %}
+{% import 'lib/forms.html' as forms with context %}
+
+{% block page %}
+    <div class="md:max-w-5xl">
+        <h3>{{ _('Team members') }}</h3>
+        <div class="relative overflow-x-auto">
+            {% include 'web/teams/members_view.html' %}
+        </div>
+
+        <hr class="my-10">
+        <h3 class="flex items-center justify-between">
+            {{ _('Sent invitations') }}
+            <button class="btn btn-sm btn-accent" type="button"
+                    hx-get="{{ url('teams.members.invite') }}"
+                    hx-target="x-modals"
+            >
+                {{ _('Invite member') }}
+            </button>
+        </h3>
+        <div class="relative overflow-x-auto">
+            {% include 'web/teams/invites_view.html' %}
+        </div>
+    </div>
+{% endblock %}

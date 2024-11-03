@@ -30,7 +30,7 @@ from app.contexts.auth.passwords import CHANGE_PASSWORD_TTL, make_password_reset
 from app.contexts.auth.social import oauth
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
-from app.contrib.urls import safe_referer
+from app.contrib.urls import resolve_redirect_url, safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
 from app.web.auth.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
@@ -49,9 +49,8 @@ logger = structlog.get_logger(__name__)
 @routes.get_or_post("/login", name="login")
 async def login_view(request: Request, dbsession: DbSession) -> Response:
     """Login the user."""
-    redirect_to = safe_referer(request, request.query_params.get("next", request.url_for("dashboard")))
     if request.user.is_authenticated:
-        return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(request.url_for("dashboard"), status_code=status.HTTP_302_FOUND)
 
     form = await forms.create_form(request, LoginForm)
     status_code = status.HTTP_200_OK
@@ -74,6 +73,8 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
                 await login(request, user, settings.secret_key)
                 await limiter.clear(get_client_ip(request))
                 flash(request).success(_("You have been logged in."))
+
+                redirect_to = resolve_redirect_url(request, request.url_for("dashboard"))
                 return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)
             except AuthenticationError as exc:
                 await logger.awarning("login error", exc_info=True, email=form.email.data, ip=get_client_ip(request))

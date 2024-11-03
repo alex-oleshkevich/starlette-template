@@ -6,7 +6,7 @@
         <form method="post" action="{{ request.url }}" hx-post="{{ request.url }}" enctype="multipart/form-data">
             <div class="grid md:grid-cols-1">
                 {{ forms.form_group(form.name) }}
-                {{ forms.form_group(form.photo) }}
+                {{ forms.form_group(form.logo) }}
             </div>
             <button class="btn btn-primary">{{ _('Update') }}</button>
         </form>

@@ -1,3 +1,5 @@
+import hashlib
+
 import itsdangerous
 from anyio.to_thread import run_sync
 from cryptography.fernet import Fernet
@@ -78,3 +80,13 @@ def get_signed_value(data: bytes | str, max_age: int | None = None, secret_key: 
     secret_key = secret_key or settings.secret_key
     signer = itsdangerous.TimestampSigner(secret_key)
     return signer.unsign(data, max_age)
+
+
+def hash_value(data: bytes | str) -> str:
+    hasher = hashlib.sha256()
+    hasher.update(data.encode() if isinstance(data, str) else data)
+    return hasher.hexdigest()
+
+
+def verify_hashed_value(hashed: str, data: bytes | str) -> bool:
+    return hashed == hash_value(data)

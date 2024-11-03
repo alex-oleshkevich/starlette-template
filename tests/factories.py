@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from app.config.crypto import make_password
 from app.contexts.subscriptions.models import SubscriptionPlan
-from app.contexts.teams.models import Team, TeamMember, TeamRole
+from app.contexts.teams.models import Team, TeamInvite, TeamMember, TeamRole
 from app.contexts.users.models import User
 from tests.database import SyncSession
 
@@ -88,7 +88,7 @@ class TeamFactory(BaseModelFactory):
 class TeamRoleFactory(BaseModelFactory):
     team: Team = factory.SubFactory(TeamFactory)
     name: str = factory.Faker("word")
-    is_admin: bool = True
+    is_admin: bool = False
 
     class Meta:
         model = TeamRole
@@ -96,8 +96,26 @@ class TeamRoleFactory(BaseModelFactory):
 
 class TeamMemberFactory(BaseModelFactory):
     team: Team = factory.SubFactory(TeamFactory)
-    user: User = factory.SubFactory(UserFactory)
-    role: TeamRole = factory.SubFactory(TeamRoleFactory)
+    user: User = factory.SelfAttribute("team.owner")
+    role: TeamRole = factory.LazyAttribute(lambda obj: TeamRoleFactory(team=obj.team, is_admin=True, name="Owner"))
 
     class Meta:
         model = TeamMember
+
+
+class TeamInviteFactory(BaseModelFactory):
+    team: Team = factory.SubFactory(TeamFactory)
+    email: str = factory.LazyFunction(lambda: uuid.uuid4().hex + "@example.com")
+    role: TeamRole = factory.LazyAttribute(lambda obj: TeamRoleFactory(team=obj.team))
+    inviter: TeamMember = factory.LazyAttribute(
+        lambda obj: TeamMemberFactory(
+            team=obj.team,
+            user=obj.team.owner,
+            role=TeamRoleFactory(team=obj.team, is_admin=True, name="Owner"),
+        )
+    )
+
+    token: str = factory.LazyFunction(lambda: uuid.uuid4().hex)
+
+    class Meta:
+        model = TeamInvite

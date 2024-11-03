@@ -27,7 +27,6 @@ class SubscriptionPlan(Base, WithTimestamps):
         doc="Archived plans are not available for new subscriptions",
     )
 
-    # FIXME: define default
     is_default: Mapped[bool] = mapped_column(
         sa.Boolean, default=False, server_default=sa.false(), doc="Default plan for new users"
     )
@@ -45,15 +44,15 @@ class Subscription(Base):
         PAST_DUE = "past_due"
         CANCELLED = "cancelled"
 
-    class Recurrence(enum.StrEnum):
+    class BillingInterval(enum.StrEnum):
         MONTHLY = "monthly"
         ANNUALLY = "annually"
 
     id: Mapped[IntPk]
     plan_id: Mapped[int] = mapped_column(sa.ForeignKey("subscriptions_plans.id"))
     team_id: Mapped[int] = mapped_column(sa.ForeignKey("teams.id"))
-    recurrence: Mapped[Recurrence] = mapped_column(
-        sa.Text, default=Recurrence.MONTHLY, server_default=Recurrence.MONTHLY
+    billing_interval: Mapped[BillingInterval] = mapped_column(
+        sa.Text, default=BillingInterval.MONTHLY, server_default=BillingInterval.MONTHLY
     )
     auto_renew: Mapped[bool] = mapped_column(sa.Boolean, default=True, server_default=sa.true())
     status: Mapped[Status] = mapped_column(sa.Text, default=Status.ACTIVE, server_default=Status.ACTIVE)

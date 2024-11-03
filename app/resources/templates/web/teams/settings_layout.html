@@ -5,8 +5,12 @@
         <a href="{{ url('teams.settings') }}" class="{{ css_classes(active=pathname_matches('teams.settings')) }}">
             {{ _('General') }}
         </a>
-        <a href="#">{{ _('Members') }}</a>
-        <a href="#">{{ _('Subscription') }}</a>
+        <a href="{{ url('teams.members') }}" class="{{ css_classes(active=pathname_matches('teams.members')) }}">
+            {{ _('Members') }}
+        </a>
+        <a href="{{ url('teams.roles') }}" class="{{ css_classes(active=pathname_matches('teams.roles')) }}">
+            {{ _('Roles') }}
+        </a>
     </nav>
     {% block page %}{% endblock %}
 {% endblock %}

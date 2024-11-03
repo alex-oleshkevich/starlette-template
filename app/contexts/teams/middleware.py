@@ -38,7 +38,7 @@ class TeamMiddleware:
         team_id: int | None = None
         request = Request(scope)
         repo = TeamRepo(request.state.dbsession)
-        memberships = await repo.get_memberships(request.user.id)
+        memberships = await repo.get_active_memberships(request.user.id)
         request.state.team = None
         request.state.team_member = None
         request.state.team_memberships = memberships

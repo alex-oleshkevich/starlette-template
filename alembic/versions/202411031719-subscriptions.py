@@ -1,8 +1,8 @@
 """subscriptions
 
-Revision ID: d37402b4d9b8
-Revises: 0f95e587bc05
-Create Date: 2024-10-30 10:48:46.614071
+Revision ID: 9f71a94dd7b8
+Revises: ff6539c20a9e
+Create Date: 2024-11-03 17:19:56.602050
 
 """
 
@@ -11,8 +11,8 @@ import sqlalchemy as sa
 from app.config.sqla.types import MoneyType
 
 # revision identifiers, used by Alembic.
-revision = "d37402b4d9b8"
-down_revision = "0f95e587bc05"
+revision = "9f71a94dd7b8"
+down_revision = "ff6539c20a9e"
 branch_labels = None
 depends_on = None
 
@@ -27,6 +27,8 @@ def upgrade() -> None:
         sa.Column("price", MoneyType, nullable=False),
         sa.Column("is_archived", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("is_default", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -34,7 +36,7 @@ def upgrade() -> None:
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column("plan_id", sa.BigInteger(), nullable=False),
         sa.Column("team_id", sa.BigInteger(), nullable=False),
-        sa.Column("recurrence", sa.Text(), server_default="monthly", nullable=False),
+        sa.Column("billing_interval", sa.Text(), server_default="monthly", nullable=False),
         sa.Column("auto_renew", sa.Boolean(), server_default=sa.text("true"), nullable=False),
         sa.Column("status", sa.Text(), server_default="active", nullable=False),
         sa.Column("subscribed_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
@@ -91,9 +93,12 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-
     op.execute(
-        "insert into subscriptions_plans (name, description, price, is_default) values ('Free', 'Free plan', 0, true)"
+        """
+        INSERT INTO subscriptions_plans (name, description, price, is_default)
+        VALUES
+            ('Free', 'A free plan with limited features.', 0, true)
+        """
     )
     # ### end Alembic commands ###
 

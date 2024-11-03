@@ -20,6 +20,8 @@ async def send_mail(
     to: Recipients | None = None,
     subject: str | None = None,
     *,
+    cc: Recipients | None = None,
+    bcc: Recipients | None = None,
     html: str | None = None,
     text: str | None = None,
     from_address: Recipients | None = None,
@@ -29,6 +31,8 @@ async def send_mail(
     return await mailer.send(
         Email(
             to=to,
+            cc=cc,
+            bcc=bcc,
             subject=str(subject or ""),
             from_address=from_address,
             text=text,
@@ -42,6 +46,8 @@ async def send_templated_mail(
     to: str,
     subject: str,
     *,
+    cc: Recipients | None = None,
+    bcc: Recipients | None = None,
     text_template: str | None = None,
     html_template: str | None = None,
     context: typing.Mapping[str, typing.Any] | None = None,
@@ -67,6 +73,8 @@ async def send_templated_mail(
     html_content: str | None = render_to_string(html_template, context) if html_template else None
     await send_mail(
         to=to,
+        cc=cc,
+        bcc=bcc,
         subject=subject,
         html=html_content,
         text=text_content,

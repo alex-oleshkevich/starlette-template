@@ -1,13 +1,14 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped
 
 from app.config.sqla.columns import AutoCreatedAt, AutoUpdatedAt
 
 
 class WithTimestamps:
-    created_at: AutoCreatedAt
-    updated_at: AutoUpdatedAt
+    __abstract__ = True
+    created_at: Mapped[AutoCreatedAt]
+    updated_at: Mapped[AutoUpdatedAt]
 
 
 class Base(AsyncAttrs, DeclarativeBase):

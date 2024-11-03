@@ -1,6 +1,5 @@
 import typing
 
-import limits
 import pytest
 import sqlalchemy as sa
 from mailers import InMemoryTransport
@@ -11,6 +10,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.testclient import TestClient
 from starlette_babel import switch_locale, switch_timezone
+from starsessions import InMemoryStore, SessionStore
 
 from app.asgi import app as starlette_app
 from app.config import mailers
@@ -21,6 +21,8 @@ from app.contexts.subscriptions.models import SubscriptionPlan
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 from app.contrib.storage import StorageType
+from app.contrib.testing import TestAuthClient
+from app.web.app import session_backend as app_session_backend
 from tests import database
 from tests.factories import (
     RequestFactory,
@@ -99,13 +101,24 @@ def team(user: User) -> Team:
 
 
 @pytest.fixture()
-def team_owner_role(team: Team) -> TeamRole:
+def team_user_role(team: Team) -> TeamRole:
+    return TeamRoleFactory(team=team, is_admin=False)
+
+
+@pytest.fixture()
+def team_admin_role(team: Team) -> TeamRole:
     return TeamRoleFactory(team=team, is_admin=True)
 
 
 @pytest.fixture()
-def team_member(user: User, team: Team, team_owner_role: TeamRole) -> TeamMember:
-    return TeamMemberFactory(user=user, team=team, role=team_owner_role)
+def team_member(user: User, team: Team, team_admin_role: TeamRole) -> TeamMember:
+    return TeamMemberFactory(user=user, team=team, role=team_admin_role)
+
+
+@pytest.fixture()
+def user_session() -> SessionStore:
+    assert isinstance(app_session_backend, InMemoryStore)
+    return app_session_backend
 
 
 @pytest.fixture
@@ -116,14 +129,24 @@ def client(app: Starlette) -> typing.Generator[TestClient, None, None]:
 
 
 @pytest.fixture
-def auth_client(app: Starlette, team_member: TeamMember, monkeypatch: pytest.MonkeyPatch) -> TestClient:
+async def auth_client(
+    app: Starlette,
+    team_member: TeamMember,
+    user_session: SessionStore,
+    settings: Config,
+) -> typing.AsyncGenerator[TestClient, None]:
     """Authenticated client."""
-    with monkeypatch.context() as m:
-        with TestClient(app, follow_redirects=False, cookies={"team_id": str(team_member.team_id)}) as client:
-            m.setattr("app.web.auth.routes.login_rate_limit", limits.parse("1000/second"))
-            response = client.post("/login", data={"email": team_member.user.email, "password": "password"})
-            assert response.status_code == 302, "Client should be authenticated, got: %s" % response.status_code
-    return client
+
+    with TestAuthClient(
+        app,
+        session_store=user_session,
+        session_cookie=settings.session_cookie,
+        team_cookie=settings.team_cookie,
+        follow_redirects=False,
+    ) as client:
+        await client.force_user(team_member.user)
+        client.force_team(team_member.team)
+        yield client
 
 
 @pytest.fixture

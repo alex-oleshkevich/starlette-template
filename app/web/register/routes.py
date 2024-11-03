@@ -25,6 +25,7 @@ from app.contexts.subscriptions.repo import SubscriptionRepo
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
 from app.contrib.forms import validate_on_submit
+from app.contrib.urls import resolve_redirect_url
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
 from app.web.register.forms import RegisterForm
@@ -35,7 +36,6 @@ register_rate_limit = limits.parse("3/minute")
 
 @routes.get_or_post("/register", name="register")
 async def register_view(request: Request, dbsession: DbSession, settings: Settings) -> Response:
-    redirect_url = request.url_for("dashboard")
     status_code = status.HTTP_200_OK
     form = await forms.create_form(request, RegisterForm)
     headers = {}
@@ -67,20 +67,18 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
                 await dbsession.commit()
 
                 flash(request).success(_("Your account has been created."))
-                if settings.register_auto_login:
-                    await login(request, user, secret_key=settings.secret_key)
-
                 tasks: list[BackgroundTask] = []
                 if settings.register_require_email_confirmation:
                     token = make_verification_token(user)
                     verification_link = request.url_for("verify_email", token=token)
                     tasks.append(BackgroundTask(send_email_verification_link, user=user, link=verification_link))
 
-                return RedirectResponse(
-                    redirect_url,
-                    status_code=status.HTTP_302_FOUND,
-                    background=BackgroundTasks(tasks),
-                )
+                redirect_url = request.url_for("login")
+                if settings.register_auto_login:
+                    redirect_url = resolve_redirect_url(request, request.url_for("dashboard"))
+                    await login(request, user, secret_key=settings.secret_key)
+
+                return RedirectResponse(redirect_url, status.HTTP_302_FOUND, background=BackgroundTasks(tasks))
             except RegisterError as ex:
                 flash(request).error(ex.message or _("An error occurred."))
                 status_code = status.HTTP_400_BAD_REQUEST

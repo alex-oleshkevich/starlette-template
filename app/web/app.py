@@ -5,7 +5,7 @@ from starlette.routing import Mount, Route, Router
 from starlette_auth import LoginRequiredMiddleware, SessionBackend
 from starlette_babel import LocaleMiddleware, TimezoneMiddleware
 from starlette_dispatch import RouteGroup
-from starsessions import CookieStore, SessionAutoloadMiddleware, SessionMiddleware
+from starsessions import InMemoryStore, SessionAutoloadMiddleware, SessionMiddleware
 from starsessions.stores.redis import RedisStore
 
 from app.config import redis, settings
@@ -18,10 +18,9 @@ from app.web.internal.routes import routes as internal_routes
 from app.web.profile.routes import routes as profile_routes
 from app.web.register.routes import routes as register_routes
 from app.web.teams.routes import routes as teams_routes
+from app.web.teams.routes import team_invitation_public_routes
 
-session_backend = (
-    CookieStore(secret_key=settings.secret_key) if settings.is_test else RedisStore(connection=redis.redis)
-)
+session_backend = InMemoryStore() if settings.is_test else RedisStore(connection=redis.redis)
 
 web_router = Router(
     middleware=[
@@ -30,6 +29,7 @@ web_router = Router(
             rolling=True,
             lifetime=settings.session_lifetime,
             store=session_backend,
+            cookie_name=settings.session_cookie,
             cookie_path="/",
             cookie_https_only=settings.app_env == Environment.PRODUCTION,
         ),
@@ -46,12 +46,13 @@ web_router = Router(
             internal_routes,
             login_routes,
             register_routes,
+            team_invitation_public_routes,
             Route("/", RedirectResponse("/app", status_code=302), name="home"),
             Mount(
                 path="/app",
                 middleware=[
                     Middleware(LoginRequiredMiddleware, path_name="login"),
-                    Middleware(TeamMiddleware, cookie_name="team_id", query_param="team_id"),
+                    Middleware(TeamMiddleware, cookie_name=settings.team_cookie, query_param="team_id"),
                     Middleware(RequireTeamMiddleware, redirect_path_name="teams.select"),
                 ],
                 routes=RouteGroup(

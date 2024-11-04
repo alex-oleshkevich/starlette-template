@@ -16,6 +16,30 @@
                 {{ invite.created_at|datetime }}
             </td>
             <td>
+                <div class="flex items-center justify-end gap-2">
+                    <o-popover placement="bottom-end" target="#invite-{{ invite.id }}">
+                        <button type="button" class="btn btn-text btn-rounded">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                 class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                            </svg>
+                        </button>
+                    </o-popover>
+                    <div class="dropdown" id="invite-{{ invite.id }}">
+                        <nav class="list-menu">
+                            <button type="button"
+                                    hx-confirm="{{ _('Do you want to cancel this invitation?') }}"
+                                    hx-post="{{ url('teams.invites.cancel', invite_id=invite.id) }}">
+                                    {{ _('Cancel') }}
+                            </button>
+                        </nav>
+                    </div>
+                </div>
             </td>
         </tr>
     {% else %}

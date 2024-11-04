@@ -131,13 +131,11 @@ async def invite_view(request: Request, dbsession: DbSession, team_member: Curre
 
 
 @routes.post("/teams/members/toggle-status/{member_id:int}", name="teams.members.toggle_status")
-async def toggle_status_view(
-    request: Request, dbsession: DbSession, team: CurrentTeam, member_id: FromPath[int]
-) -> Response:
+async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id: FromPath[int]) -> Response:
     repo = TeamRepo(dbsession)
     member = await repo.get_team_member_by_id(team.id, member_id)
     if not member:
-        return htmx.response().error_toast(_("Member not found.")).trigger("refresh-members")
+        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Member not found.")).trigger("refresh-members")
 
     if member.is_suspended:
         member.unsuspend()
@@ -148,6 +146,22 @@ async def toggle_status_view(
 
     await dbsession.commit()
     return htmx.response().success_toast(message).trigger("refresh-members")
+
+
+@routes.post("/teams/invites/cancel/{invite_id:int}", name="teams.invites.cancel")
+async def cancel_invitation_view(dbsession: DbSession, team: CurrentTeam, invite_id: FromPath[int]) -> Response:
+    repo = TeamRepo(dbsession)
+    invitation = await repo.get_invitation(team.id, invite_id)
+    if not invitation:
+        return (
+            htmx.response(status.HTTP_404_NOT_FOUND)
+            .error_toast(_("Invitation not found."))
+            .trigger("refresh-invitations")
+        )
+
+    await dbsession.delete(invitation)
+    await dbsession.commit()
+    return htmx.response().success_toast(_("Member has been deactivated.")).trigger("refresh-invitations")
 
 
 @routes.get_or_post("/teams/roles", name="teams.roles")
@@ -169,7 +183,7 @@ async def accept_invite_view(
         return RedirectResponse(request.url_for("register"), status_code=status.HTTP_302_FOUND)
 
     repo = TeamRepo(dbsession)
-    invitation = await repo.get_invite_by_token(token)
+    invitation = await repo.get_invitation_by_token(token)
     if not invitation:
         return templates.TemplateResponse(
             request,

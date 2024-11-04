@@ -50,7 +50,11 @@ class TeamRepo(Repo[Team]):
         stmt = self.roles.get_base_query().where(TeamRole.team_id == team_id)
         return await self.query.all(stmt)
 
-    async def get_invite_by_token(self, token: str) -> TeamInvite | None:
+    async def get_invitation(self, team_id: int, invite_id: int) -> TeamInvite | None:
+        stmt = self.invites.get_base_query().where(TeamInvite.team_id == team_id, TeamInvite.id == invite_id)
+        return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
+
+    async def get_invitation_by_token(self, token: str) -> TeamInvite | None:
         stmt = self.invites.get_base_query().where(TeamInvite.token == hash_value(token))
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 

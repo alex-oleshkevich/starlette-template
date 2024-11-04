@@ -371,6 +371,9 @@ class TestMemberships:
     def test_suspend_membership(
         self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session
     ) -> None:
+        response = auth_client.post("/app/teams/members/toggle-status/-1")
+        assert response.status_code == 404
+
         user = UserFactory()
         team_member = TeamMemberFactory(team=team_member.team, user=user)
         response = auth_client.post(f"/app/teams/members/toggle-status/{team_member.id}")
@@ -389,3 +392,17 @@ class TestMemberships:
 
         dbsession_sync.refresh(team_member)
         assert not team_member.is_suspended
+
+    def test_cancel_invitation(
+        self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session
+    ) -> None:
+        response = auth_client.post("/app/teams/invites/cancel/-1")
+        assert response.status_code == 404
+
+        user = UserFactory()
+        team_member = TeamMemberFactory(team=team_member.team, user=user)
+        invitation = TeamInviteFactory(team=team_member.team, inviter=team_member)
+        response = auth_client.post(f"/app/teams/invites/cancel/{invitation.id}")
+        assert response.status_code == 204
+
+        assert not dbsession_sync.scalars(sa.select(TeamInvite).where(TeamInvite.id == invitation.id)).one_or_none()

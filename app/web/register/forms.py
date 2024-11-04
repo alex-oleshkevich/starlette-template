@@ -10,7 +10,9 @@ class RegisterForm(wtforms.Form):
     last_name = wtforms.StringField(
         _("Last name"), validators=[wtforms.validators.data_required(), wtforms.validators.length(min=1, max=50)]
     )
-    password = wtforms.PasswordField(_("Password"), validators=[wtforms.validators.data_required()])
+    password = wtforms.PasswordField(
+        _("Password"), validators=[wtforms.validators.data_required(), wtforms.validators.length(max=255)]
+    )
     password_confirm = wtforms.PasswordField(
         _("Confirm Password"),
         validators=[

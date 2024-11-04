@@ -1,3 +1,4 @@
+import limits
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.background import BackgroundTask, BackgroundTasks
@@ -7,18 +8,23 @@ from starlette_babel import gettext_lazy as _
 from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
+from app.config import rate_limit
 from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser, DbSession, Files
 from app.config.templating import templates
+from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
 from app.contexts.teams.models import InvitationToken, TeamInvite
 from app.contexts.teams.repo import TeamRepo
 from app.contrib import forms, htmx
 from app.contrib.forms import create_form
 from app.contrib.urls import redirect_later, safe_referer
+from app.contrib.utils import get_client_ip
+from app.exceptions import RateLimitedError
 from app.web.teams.forms import GeneralSettingsForm, InviteForm
 
 routes = RouteGroup()
 team_invitation_public_routes = RouteGroup()
+resent_invite_rate_limit = limits.parse("3/minute")
 
 
 @routes.get_or_post("/teams/select", name="teams.select")
@@ -164,6 +170,48 @@ async def cancel_invitation_view(dbsession: DbSession, team: CurrentTeam, invite
     return htmx.response().success_toast(_("Member has been deactivated.")).trigger("refresh-invitations")
 
 
+@routes.post("/teams/invites/resend/{invite_id:int}", name="teams.invites.resend")
+async def resend_invitation_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, invite_id: FromPath[int]
+) -> Response:
+    repo = TeamRepo(dbsession)
+    invitation = await repo.get_invitation(team.id, invite_id)
+    if not invitation:
+        return (
+            htmx.response(status.HTTP_404_NOT_FOUND)
+            .error_toast(_("Invitation not found."))
+            .trigger("refresh-invitations")
+        )
+
+    try:
+        limiter = rate_limit.RateLimiter(
+            resent_invite_rate_limit, f"team_invitation_resend_{team.id}_{invitation.email}"
+        )
+        await limiter.hit_or_raise(get_client_ip(request))
+    except RateLimitedError:
+        return htmx.response(status.HTTP_429_TOO_MANY_REQUESTS).error_toast(
+            _("You have reached the limit of invitation resends.")
+        )
+
+    token = InvitationToken()
+    link = token.make_url(request)
+    invite = TeamInvite(
+        email=invitation.email,
+        role=invitation.role,
+        inviter=invitation.inviter,
+        team=invitation.team,
+        token=token.hashed_token,
+    )
+    dbsession.add(invite)
+    await dbsession.delete(invitation)
+    await dbsession.flush([invitation])
+    await dbsession.commit()
+    task = BackgroundTask(send_team_invitation_email, invite, link)
+    return (
+        htmx.response(background=task).success_toast(_("Member has been deactivated.")).trigger("refresh-invitations")
+    )
+
+
 @routes.get_or_post("/teams/roles", name="teams.roles")
 async def roles_view(request: Request, dbsession: DbSession, team: CurrentTeam) -> Response:
     repo = TeamRepo(dbsession)
@@ -195,14 +243,21 @@ async def accept_invite_view(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    team_member = await repo.accept_invitation(user, invitation)
-    await dbsession.commit()
+    try:
+        team_member = await repo.accept_invitation(user, invitation)
+        await dbsession.commit()
+    except AlreadyMemberError:
+        await dbsession.delete(invitation)
+        await dbsession.commit()
 
-    flash(request).success(_("Welcome to the {team}!").format(team=team_member.team))
-    redirect_url = safe_referer(request, request.query_params.get("next", request.url_for("dashboard")))
-    redirect_url = redirect_url.include_query_params(team_id=team_member.team_id)
-    return RedirectResponse(
-        redirect_url,
-        background=BackgroundTask(send_team_member_joined_email, invitation, team_member),
-        status_code=status.HTTP_302_FOUND,
-    )
+        flash(request).error(_("You are already a member of this team."))
+        return RedirectResponse(request.url_for("dashboard"), status.HTTP_302_FOUND)
+    else:
+        flash(request).success(_("Welcome to the {team}!").format(team=team_member.team))
+        redirect_url = safe_referer(request, request.query_params.get("next", request.url_for("dashboard")))
+        redirect_url = redirect_url.include_query_params(team_id=team_member.team_id)
+        return RedirectResponse(
+            redirect_url,
+            background=BackgroundTask(send_team_member_joined_email, invitation, team_member),
+            status_code=status.HTTP_302_FOUND,
+        )

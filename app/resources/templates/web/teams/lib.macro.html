@@ -10,7 +10,7 @@
 
 
 {% macro member_status(member) %}
-    <div class="inline-flex gap-1 items-center">
+    <div class="inline-flex gap-1 items-center text-nowrap">
         {% if member.is_suspended %}
             <span class="status status-red"></span>
             <span>{{ _('Suspended') }}</span>

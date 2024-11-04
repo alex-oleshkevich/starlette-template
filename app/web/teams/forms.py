@@ -7,7 +7,7 @@ from app.contrib import forms
 
 
 class GeneralSettingsForm(wtforms.Form):
-    name = wtforms.StringField(_("Name"), [wtforms.validators.data_required()])
+    name = wtforms.StringField(_("Name"), [wtforms.validators.data_required(), wtforms.validators.length(max=255)])
     logo = forms.PhotoField(
         _("Logo"),
         [wtforms.validators.optional()],
@@ -19,7 +19,7 @@ class GeneralSettingsForm(wtforms.Form):
 class InviteForm(wtforms.Form):
     email = wtforms.TextAreaField(
         _("Emails"),
-        [wtforms.validators.data_required()],
+        [wtforms.validators.data_required(), wtforms.validators.length(max=2000)],
         description=_("Enter email addresses separated by commas."),
     )
     role = wtforms.SelectField(_("Role"), [wtforms.validators.data_required()], coerce=int)

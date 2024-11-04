@@ -33,6 +33,11 @@
                     <div class="dropdown" id="invite-{{ invite.id }}">
                         <nav class="list-menu">
                             <button type="button"
+                                    hx-confirm="{{ _('Do you want to resend the invitation message?') }}"
+                                    hx-post="{{ url('teams.invites.resend', invite_id=invite.id) }}">
+                                    {{ _('Resend email') }}
+                            </button>
+                            <button type="button"
                                     hx-confirm="{{ _('Do you want to cancel this invitation?') }}"
                                     hx-post="{{ url('teams.invites.cancel', invite_id=invite.id) }}">
                                     {{ _('Cancel') }}

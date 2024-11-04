@@ -1,3 +1,4 @@
+import limits
 import pytest
 import sqlalchemy as sa
 from mailers.pytest_plugin import Mailbox
@@ -246,6 +247,30 @@ class TestMemberships:
         assert mailbox[0]["to"] == inviter.user.email
         assert mailbox[0]["bcc"] == team_member.user.email
 
+    async def test_already_accepted(
+        self,
+        auth_client: TestAuthClient,
+        team: Team,
+        team_user_role: TeamRole,
+        mailbox: Mailbox,
+        team_member: TeamMember,
+    ) -> None:
+        """Test a case when user is already a team member."""
+        user = UserFactory()
+        TeamMemberFactory(team=team, user=user, role=team_user_role)
+        token = InvitationToken()
+        TeamInviteFactory(team=team_member.team, token=token.hashed_token, email=user.email, inviter=team_member)
+
+        auth_client.force_team(team)
+        await auth_client.force_user(user)
+        response = auth_client.get(f"/teams/members/accept-invite/{token.plain_token}")
+        assert response.status_code == 302
+        assert response.headers["location"] == "http://testserver/app/"
+
+        response = auth_client.get(response.headers["location"])
+        assert response.status_code == 200
+        assert "You are already a member of this team." in response.text
+
     def test_no_invitation(self, auth_client: TestClient, team_member: TeamMember) -> None:
         response = auth_client.get("/teams/members/accept-invite/somemissingtoken")
         assert "Invalid or expired invitation" in response.text
@@ -406,3 +431,43 @@ class TestMemberships:
         assert response.status_code == 204
 
         assert not dbsession_sync.scalars(sa.select(TeamInvite).where(TeamInvite.id == invitation.id)).one_or_none()
+
+    def test_resend_invitation(
+        self, auth_client: TestAuthClient, monkeypatch: pytest.MonkeyPatch, team_member: TeamMember, mailbox: Mailbox
+    ) -> None:
+        monkeypatch.setattr("app.web.teams.routes.resent_invite_rate_limit", limits.parse("100/minute"))
+
+        response = auth_client.post("/app/teams/invites/resend/-1")
+        assert response.status_code == 404
+        assert len(mailbox) == 0
+
+        user = UserFactory()
+        team_member = TeamMemberFactory(team=team_member.team, user=user)
+        invitation = TeamInviteFactory(team=team_member.team, inviter=team_member)
+
+        response = auth_client.post(f"/app/teams/invites/resend/{invitation.id}")
+        assert response.status_code == 204
+        assert len(mailbox) == 1
+
+    def test_resend_invitation_limit(
+        self,
+        auth_client: TestAuthClient,
+        monkeypatch: pytest.MonkeyPatch,
+        team_member: TeamMember,
+        mailbox: Mailbox,
+        dbsession_sync: Session,
+    ) -> None:
+        monkeypatch.setattr("app.web.teams.routes.resent_invite_rate_limit", limits.parse("1/minute"))
+
+        user = UserFactory()
+        team_member = TeamMemberFactory(team=team_member.team, user=user)
+        invitation: TeamInvite = TeamInviteFactory(team=team_member.team, inviter=team_member)
+
+        response = auth_client.post(f"/app/teams/invites/resend/{invitation.id}")
+        assert response.status_code == 204
+
+        invitation = dbsession_sync.scalars(
+            sa.select(TeamInvite).where(TeamInvite.team_id == team_member.team_id)
+        ).one()
+        response = auth_client.post(f"/app/teams/invites/resend/{invitation.id}")
+        assert response.status_code == 429

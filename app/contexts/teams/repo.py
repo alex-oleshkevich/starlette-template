@@ -4,6 +4,7 @@ from sqlalchemy.orm import joinedload
 from starlette_sqlalchemy import Collection, Repo
 
 from app.config.crypto import hash_value
+from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.models import Team, TeamInvite, TeamMember, TeamRole
 from app.contexts.users.models import User
 
@@ -59,6 +60,12 @@ class TeamRepo(Repo[Team]):
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 
     async def accept_invitation(self, user: User, invitation: TeamInvite) -> TeamMember:
+        current_member = await self.query.one_or_none(
+            sa.select(TeamMember).where(TeamMember.team == invitation.team, TeamMember.user == user)
+        )
+        if current_member:
+            raise AlreadyMemberError()
+
         team_member = TeamMember(
             user=user,
             team=invitation.team,

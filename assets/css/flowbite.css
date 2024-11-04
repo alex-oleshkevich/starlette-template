@@ -269,13 +269,13 @@
     }
 
     .dropdown {
-        width: 300px;
+        --dropdown-width: 250px;
         z-index: 99999;
         opacity: 0;
         transform: scale(0.95);
         transition: transform 0.2s;
         left: -999999999999px;
-        @apply fixed shadow-xl border border-gray-200 rounded;
+        @apply w-[var(--dropdown-width)] fixed shadow-xl border border-gray-200 rounded;
     }
 
     .dropdown.open {
@@ -403,27 +403,8 @@
         @apply dark:bg-pink-900 dark:text-pink-300;
     }
 
-    @keyframes modal {
-        0% {
-            opacity: 0;
-            transform: translateY(5%) scale(0.95);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-    @keyframes modal-container {
-        0% {
-            @apply bg-gray-900/0;
-        }
-        100% {
-            @apply bg-gray-900/50;
-        }
-    }
-
     .modal-container {
-        @apply overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full;
+        @apply overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-end md:items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full;
         @apply bg-transparent flex;
         transition: background-color 0.2s;
     }
@@ -440,6 +421,7 @@
 
     .modal-container.open .modal {
         opacity: 1;
+        transition: all 0.2s;
         transform: translateY(0) scale(1);
     }
 
@@ -448,7 +430,7 @@
     }
 
     .modal {
-        @apply w-full max-w-2xl max-h-full;
+        @apply w-full max-w-2xl max-h-full m-2 md:m-0;
         @apply relative bg-white rounded-lg shadow dark:bg-gray-700;
     }
 

@@ -1,7 +1,8 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
+import { customElement, property, queryAssignedElements, state } from 'lit/decorators.js';
 import { autoPlacement, autoUpdate, computePosition, offset } from '@floating-ui/dom';
 import { Placement } from '@floating-ui/utils';
+import { OnClickOutsideController } from '../controllers/click_outside';
 
 declare global {
     interface HTMLElementTagNameMap {
@@ -11,17 +12,23 @@ declare global {
 
 @customElement('o-popover')
 export class PopoverElement extends LitElement {
-    @property({ reflect: true, type: Boolean })
-    open = false;
+    clickOutside = new OnClickOutsideController(this, () => {
+        if (this.isOpen) {
+            this.close();
+        }
+    });
+
+    @state()
+    isOpen = false;
 
     @property()
-    trigger: string | 'previous' | 'next' = '';
-
-    @queryAssignedElements({ selector: '*:first-child' })
-    floatingEl!: HTMLElement[];
+    target: string = '';
 
     @property()
-    placement: Placement = 'bottom';
+    trigger: string = '';
+
+    @property()
+    placement: Placement = 'bottom-start';
 
     @property({ type: Number, attribute: 'offset-main-axis' })
     offsetMainAxis = 0;
@@ -32,64 +39,73 @@ export class PopoverElement extends LitElement {
     @property({ type: Number, attribute: 'offset-alignment-axis' })
     offsetAlignmentAxis = 0;
 
-    getTrigger(): HTMLElement {
-        let trigger: HTMLElement | null;
-        switch (this.trigger) {
-            case 'previous':
-                trigger = this.previousElementSibling as HTMLElement;
-                break
-            case 'next':
-                trigger = this.nextElementSibling as HTMLElement;
-                break
-            default:
-                trigger = document.querySelector(this.trigger);
+    @queryAssignedElements({ selector: '*:first-child' })
+    triggerEl!: HTMLElement[];
+
+    targetEl!: HTMLElement;
+
+    unmountCallback?: () => void = () => {
+    };
+
+    protected override render(): unknown {
+        if (this.targetEl) {
+            if (this.isOpen) {
+                this.targetEl.classList.add('open');
+            } else {
+                this.targetEl.classList.remove('open');
+                this.targetEl.style.left = '';
+            }
         }
-        if (trigger == null) {
-            throw new Error('No trigger.');
-        }
-        return trigger;
+        return html`
+            <slot></slot>
+            <slot name="popover"></slot>`;
     }
 
     protected override firstUpdated() {
-        const triggered = () => this.open ? this.destroy() : this.setup();
-        this.addEventListener('close', () => this.close());
+        let triggerEl = this.triggerEl[0];
+        if (this.trigger) {
+            triggerEl = Array.from(document.querySelectorAll<HTMLElement>(this.trigger))[0];
+        }
+        if (!triggerEl) {
+            throw new Error(`Invalid trigger element or does not exist: ${ triggerEl }.`);
+        }
 
-        const trigger = this.getTrigger();
-        trigger.addEventListener('click', triggered);
-        document.addEventListener('click', e => {
-            if (!this.open) {
-                return;
-            }
+        let targetEl = document.querySelector<HTMLElement>(this.target);
+        if (!targetEl) {
+            throw new Error(`No target element: ${ this.target }`);
+        }
 
-            if (trigger?.contains(e.target as HTMLElement)) {
-                return;
-            }
+        this.targetEl = targetEl;
 
-            if (!this.contains(e.target as HTMLElement)) {
-                this.open = false;
+        triggerEl.addEventListener('click', () => {
+            this.isOpen = !this.isOpen;
+            if (this.isOpen) {
+                this.open();
+            } else {
+                this.close();
             }
         });
-        this.renderRoot.querySelectorAll('.list-menu-item').forEach(el => {
-            el.addEventListener('click', () => {
-                setTimeout(this.close, 40);
-            });
+
+        targetEl.querySelectorAll('.list-menu-item').forEach(el => {
+            el.addEventListener('click', () => setTimeout(this.close, 40));
         });
+    }
+
+    open() {
+        this.mount();
+        this.isOpen = true;
     }
 
     close() {
-        this.open = false;
+        this.isOpen = false;
+        this.unmount();
     }
 
-    private setup() {
-        this.open = true;
-        const triggerEl = this.getTrigger()
-
-        if (this.floatingEl.length == 0) {
-            throw new Error('Empty slot.');
-        }
-
-        autoUpdate(triggerEl, this.floatingEl[0], () => {
-            computePosition(triggerEl, this.floatingEl[0], {
+    mount() {
+        const triggerEl = this.triggerEl[0];
+        const targetEl = this.targetEl;
+        this.unmountCallback = autoUpdate(triggerEl, targetEl, () => {
+            computePosition(triggerEl, targetEl, {
                 placement: this.placement,
                 middleware: [
                     offset({
@@ -103,7 +119,7 @@ export class PopoverElement extends LitElement {
                 ],
             })
                 .then(({ x, y }) => {
-                    Object.assign(this.floatingEl[0].style, {
+                    Object.assign(targetEl.style, {
                         left: `${ x }px`,
                         top: `${ y }px`,
                     });
@@ -111,13 +127,9 @@ export class PopoverElement extends LitElement {
         });
     }
 
-    private destroy() {
-        this.open = false;
-    }
-
-    override render(): unknown {
-        this.floatingEl.forEach(el => el.style.display = this.open ? 'block' : 'none');
-        return html`
-            <slot></slot>`;
+    unmount() {
+        if (this.unmountCallback) {
+            this.unmountCallback();
+        }
     }
 }

@@ -367,3 +367,25 @@ class TestMemberships:
         response = client.get(response.headers["location"])
         assert response.status_code == 200
         assert team_member.team.name in response.text
+
+    def test_suspend_membership(
+        self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session
+    ) -> None:
+        user = UserFactory()
+        team_member = TeamMemberFactory(team=team_member.team, user=user)
+        response = auth_client.post(f"/app/teams/members/toggle-status/{team_member.id}")
+        assert response.status_code == 204
+
+        dbsession_sync.refresh(team_member)
+        assert team_member.is_suspended
+
+    def test_resume_membership(
+        self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session
+    ) -> None:
+        user = UserFactory()
+        team_member = TeamMemberFactory(team=team_member.team, user=user, suspended_at="2021-01-01")
+        response = auth_client.post(f"/app/teams/members/toggle-status/{team_member.id}")
+        assert response.status_code == 204
+
+        dbsession_sync.refresh(team_member)
+        assert not team_member.is_suspended

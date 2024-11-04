@@ -49,20 +49,23 @@
 
                 <!-- user menu -->
                 <footer class="mt-auto">
-                    <button type="button" id="user-menu" data-dropdown-toggle="user-menu-dropdown"
-                            class="flex items-center justify-start mr-4 p-2 gap-3 mt-auto hover:bg-gray-200 w-full rounded-md text-center">
-                        <div>{{ users.user_avatar(user) }}</div>
-                        <div class="w-full text-left">
-                            <div class="font-semibold">{{ user }}</div>
-                            <div class="text-sm text-gray-600">{{ team_member.role }}</div>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                             class="ml-auto text-gray-500">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M6 9l6 6l6 -6"/>
-                        </svg>
-                    </button>
+                    <o-popover placement="top-start" target="#user-menu-dropdown">
+                        <button type="button" id="user-menu"
+                                class="flex items-center justify-start mr-4 p-2 gap-3 mt-auto hover:bg-gray-200 w-full rounded-md text-center">
+                            <div>{{ users.user_avatar(user) }}</div>
+                            <div class="w-full text-left">
+                                <div class="font-semibold">{{ user }}</div>
+                                <div class="text-sm text-gray-600">{{ team_member.role }}</div>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                 class="ml-auto text-gray-500">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <path d="M6 9l6 6l6 -6"/>
+                            </svg>
+                        </button>
+                    </o-popover>
                     <form class="dropdown hidden" id="user-menu-dropdown">
                         <nav class="list-menu">
                             <a href="{{ url('teams.settings') }}">

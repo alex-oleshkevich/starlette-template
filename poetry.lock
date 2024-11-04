@@ -2702,13 +2702,13 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "starlette-auth"
-version = "0.2.2"
+version = "0.2.3"
 description = "Authentication library for Starlette."
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "starlette_auth-0.2.2-py3-none-any.whl", hash = "sha256:3a261ba157b46c5bd20d81f6ffd80dd1d16bb1ac04dbbb827da508f88c9ade59"},
-    {file = "starlette_auth-0.2.2.tar.gz", hash = "sha256:6229c563a44f50ac3e35fe27cfd89b15c3a4914887d27e3ebcbe2d590cebb62f"},
+    {file = "starlette_auth-0.2.3-py3-none-any.whl", hash = "sha256:69e8ff647f8f86f2fb0edfc60c64305e5a6aaf287cde08a59a372cb6b9e502c7"},
+    {file = "starlette_auth-0.2.3.tar.gz", hash = "sha256:96cf47b0d49c5afdefa588d724516bceb6380798787b377522ad2fdf47c7e8f6"},
 ]
 
 [package.dependencies]

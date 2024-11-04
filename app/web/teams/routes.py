@@ -71,8 +71,16 @@ async def members_view(request: Request, dbsession: DbSession, team: CurrentTeam
     repo = TeamRepo(dbsession)
     members = await repo.get_team_members(team.id)
     invites = await repo.get_invites(team.id)
+
+    template_name = "web/teams/members.html"
+    if htmx.is_htmx_request(request):
+        if htmx.matches_target(request, "members"):
+            template_name = "web/teams/members_view.html"
+        if htmx.matches_target(request, "invitations"):
+            template_name = "web/teams/invites_view.html"
+
     return templates.TemplateResponse(
-        request, "web/teams/members.html", {"page_title": _("Members"), "members": members, "invites": invites}
+        request, template_name, {"page_title": _("Members"), "members": members, "invites": invites}
     )
 
 
@@ -116,9 +124,30 @@ async def invite_view(request: Request, dbsession: DbSession, team_member: Curre
                 )
                 .success_toast(_("Invites have been sent."))
                 .close_modal()
+                .trigger("refresh-invitations")
             )
 
     return templates.TemplateResponse(request, "web/teams/invite_form.html", {"form": form}, status_code=status_code)
+
+
+@routes.post("/teams/members/toggle-status/{member_id:int}", name="teams.members.toggle_status")
+async def toggle_status_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, member_id: FromPath[int]
+) -> Response:
+    repo = TeamRepo(dbsession)
+    member = await repo.get_team_member_by_id(team.id, member_id)
+    if not member:
+        return htmx.response().error_toast(_("Member not found.")).trigger("refresh-members")
+
+    if member.is_suspended:
+        member.unsuspend()
+        message = _("Member has been activated.")
+    else:
+        member.suspend()
+        message = _("Member has been deactivated.")
+
+    await dbsession.commit()
+    return htmx.response().success_toast(message).trigger("refresh-members")
 
 
 @routes.get_or_post("/teams/roles", name="teams.roles")

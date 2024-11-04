@@ -8,6 +8,7 @@ from colorhash import ColorHash
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from starlette.datastructures import URL
 from starlette.requests import Request
+from starlette_babel import gettext_lazy as _
 
 from app.config import crypto
 from app.config.sqla.columns import DateTimeTz, IntPk
@@ -92,11 +93,22 @@ class TeamMember(Base, WithTimestamps):
         "TeamInvite", cascade="all, delete-orphan", back_populates="inviter"
     )
 
+    @property
+    def is_suspended(self) -> bool:
+        return bool(self.suspended_at)
+
     def suspend(self) -> None:
         self.suspended_at = datetime.datetime.now(datetime.UTC)
 
+    def unsuspend(self) -> None:
+        self.suspended_at = None
+
     def __str__(self) -> str:
-        return str(self.user)
+        components = [
+            str(self.user),
+            _("(suspended)") if self.is_suspended else "",
+        ]
+        return " ".join(components)
 
 
 class InvitationToken:

@@ -19,7 +19,7 @@ class TeamRepo(Repo[Team]):
         self.roles = TeamRolesRepo(dbsession)
 
     async def get_active_memberships(self, user_id: int) -> Collection[TeamMember]:
-        stmt = self.memberships.get_base_query().where(TeamMember.user_id == user_id)
+        stmt = self.memberships.get_base_query().where(TeamMember.user_id == user_id, TeamMember.suspended_at.is_(None))
         return await self.query.all(stmt)
 
     async def get_joined_teams(self, user_id: int) -> list[Team]:
@@ -28,6 +28,10 @@ class TeamRepo(Repo[Team]):
 
     async def get_team_member(self, team_id: int, user_id: int) -> TeamMember | None:
         stmt = self.memberships.get_base_query().where(TeamMember.user_id == user_id, TeamMember.team_id == team_id)
+        return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
+
+    async def get_team_member_by_id(self, team_id: int, member_id: int) -> TeamMember | None:
+        stmt = self.memberships.get_base_query().where(TeamMember.id == member_id, TeamMember.team_id == team_id)
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 
     async def get_team_members(self, team_id: int) -> Collection[TeamMember]:
@@ -72,7 +76,6 @@ class TeamMemberRepo(Repo[TeamMember]):
             joinedload(TeamMember.role),
         )
         .where(
-            TeamMember.suspended_at.is_(None),
             TeamMember.is_service.is_(False),
         )
         .order_by(TeamMember.id)

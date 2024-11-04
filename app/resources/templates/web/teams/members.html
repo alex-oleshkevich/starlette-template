@@ -4,13 +4,16 @@
 {% block page %}
     <div class="md:max-w-5xl">
         <h3>{{ _('Team members') }}</h3>
-        <div class="relative overflow-x-auto">
+        <div class="relative overflow-x-auto"
+             id="members"
+             hx-get="{{ url('teams.members') }}"
+             hx-trigger="refresh-members from:body">
             {% include 'web/teams/members_view.html' %}
         </div>
 
-        <hr class="my-10">
+        <div class="my-12">
         <h3 class="flex items-center justify-between">
-            {{ _('Sent invitations') }}
+            {{ _('Pending invitations') }}
             <button class="btn btn-sm btn-accent" type="button"
                     hx-get="{{ url('teams.members.invite') }}"
                     hx-target="x-modals"
@@ -18,7 +21,10 @@
                 {{ _('Invite member') }}
             </button>
         </h3>
-        <div class="relative overflow-x-auto">
+        <div class="relative overflow-x-auto"
+             id="invitations"
+             hx-get="{{ url('teams.members') }}"
+             hx-trigger="refresh-invitations from:body">
             {% include 'web/teams/invites_view.html' %}
         </div>
     </div>

@@ -3,7 +3,7 @@ import { toasts, modals } from './components';
 import { theme } from './theme';
 
 const app = {
-    toasts, theme, modals,
+    toasts, theme, modals
 };
 
 declare global {

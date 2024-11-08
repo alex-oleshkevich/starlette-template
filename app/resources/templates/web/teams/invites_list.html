@@ -1,0 +1,67 @@
+{% import 'lib/pagination.html' as pagination %}
+
+<div class="relative overflow-x-auto space-y-3"
+     hx-get="{{ request.url }}"
+     hx-boost="true"
+     hx-target="this"
+     hx-trigger="refresh from:body">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>{{ _('Member') }}</th>
+            <th>{{ _('Role') }}</th>
+            <th>{{ _('Sent at') }}</th>
+            <th>{{ _('Actions') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for invite in invites %}
+            <tr>
+                <td>{{ invite.email }}</td>
+                <td>{{ invite.role }}</td>
+                <td>
+                    {{ invite.created_at|datetime }}
+                </td>
+                <td>
+                    <div class="flex items-center justify-end gap-2">
+                        <o-popover placement="bottom-end" target="#invite-{{ invite.id }}">
+                            <button type="button" class="btn btn-text btn-rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                    <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                    <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                </svg>
+                            </button>
+                        </o-popover>
+                        <div class="dropdown" id="invite-{{ invite.id }}">
+                            <nav class="list-menu">
+                                <button type="button"
+                                        hx-confirm="{{ _('Do you want to resend the invitation message?') }}"
+                                        hx-post="{{ url('teams.invites.resend', invite_id=invite.id) }}">
+                                    {{ _('Resend email') }}
+                                </button>
+                                <button type="button"
+                                        hx-confirm="{{ _('Do you want to cancel this invitation?') }}"
+                                        hx-post="{{ url('teams.invites.cancel', invite_id=invite.id) }}">
+                                    {{ _('Cancel') }}
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="999" class="text-center text-muted">{{ _('No invitations sent') }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{{ pagination.pagination(request, invites) }}
+</div>

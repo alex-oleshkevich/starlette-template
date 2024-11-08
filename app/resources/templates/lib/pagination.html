@@ -1,0 +1,63 @@
+{% macro pagination(request, paginator) %}
+    {% with start_index = paginator.start_index, end_index = paginator.end_index, total_rows = paginator.total_rows %}
+        <div class="pagination" data-test="pagination">
+            <div data-test="showing">
+                {% if paginator.rows %}
+                    {% trans %}Showing {{ start_index }} - {{ end_index }} of {{ total_rows }} results.{% endtrans %}
+                {% endif %}
+            </div>
+
+            <div>
+                {% if paginator.total_pages > 1 %}
+                    <nav class="ml-auto pagination-controls">
+                        {% if paginator.has_previous %}
+                            <a href="{{ request.url.replace_query_params(page=paginator.previous_page) }}"
+                               data-test="pagination-previous" class="btn btn-text"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l14 0"/>
+                                    <path d="M5 12l4 4"/>
+                                    <path d="M5 12l4 -4"/>
+                                </svg>
+                                <span class="hidden md:inline">{{ _('Previous', domain='ohmyadmin') }}</span>
+                            </a>
+                        {% endif %}
+
+                        {% for page_number in paginator.iter_pages() %}
+                            {% if page_number %}
+                                <a href="{{ request.url.replace_query_params(page=page_number) }}"
+                                   class="btn btn-text {{ 'active' if page_number == paginator.page else '' }}"
+                                   data-test="pagination-control"
+                                >
+                                    {{ page_number }}
+                                </a>
+                            {% else %}
+                                <span class="btn-text" data-test="pagination-ellipsis">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if paginator.has_next %}
+                            <a href="{{ request.url.replace_query_params(page=paginator.next_page) }}"
+                               data-test="pagination-next" class="btn btn-text"
+                            >
+                                <span class="hidden md:inline">{{ _('Next', domain='ohmyadmin') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M5 12l14 0"/>
+                                    <path d="M15 16l4 -4"/>
+                                    <path d="M15 8l4 4"/>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    {% endwith %}
+
+{% endmacro %}

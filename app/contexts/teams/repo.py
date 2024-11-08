@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from starlette_sqlalchemy import Collection, Repo
+from starlette_sqlalchemy import Collection, Page, PageNumberPaginator, Repo
 
 from app.config.crypto import hash_value
 from app.contexts.teams.exceptions import AlreadyMemberError
@@ -35,13 +35,15 @@ class TeamRepo(Repo[Team]):
         stmt = self.memberships.get_base_query().where(TeamMember.id == member_id, TeamMember.team_id == team_id)
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 
-    async def get_team_members(self, team_id: int) -> Collection[TeamMember]:
+    async def get_team_members(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamMember]:
         stmt = self.memberships.get_base_query().where(TeamMember.team_id == team_id)
-        return await self.query.all(stmt)
+        pager = PageNumberPaginator(self.dbsession)
+        return await pager.paginate(stmt, page=page, page_size=page_size)
 
-    async def get_invites(self, team_id: int) -> Collection[TeamInvite]:
+    async def get_invites(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamInvite]:
         stmt = self.invites.get_base_query().where(TeamInvite.team_id == team_id)
-        return await self.query.all(stmt)
+        paginator = PageNumberPaginator(self.dbsession)
+        return await paginator.paginate(stmt, page=page, page_size=page_size)
 
     async def get_role(self, team_id: int, role_id: int) -> TeamRole | None:
         stmt = self.roles.get_base_query().where(TeamRole.team_id == team_id, TeamRole.id == role_id)

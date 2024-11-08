@@ -8,6 +8,9 @@
         <a href="{{ url('teams.members') }}" class="{{ css_classes(active=pathname_matches('teams.members')) }}">
             {{ _('Members') }}
         </a>
+        <a href="{{ url('teams.invites') }}" class="{{ css_classes(active=pathname_matches('teams.invites')) }}">
+            {{ _('Invitations') }}
+        </a>
         <a href="{{ url('teams.roles') }}" class="{{ css_classes(active=pathname_matches('teams.roles')) }}">
             {{ _('Roles') }}
         </a>

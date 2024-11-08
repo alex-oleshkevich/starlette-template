@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config.cache import cache
 from app.config.files import file_storage
 from app.config.mailers import mailer
+from app.config.pagination import get_page_number, get_page_size
 from app.config.redis import redis
 from app.config.settings import Config, settings
 from app.contexts.teams.models import Team, TeamMember
@@ -23,3 +24,5 @@ Settings = typing.Annotated[Config, settings]
 CurrentUser = typing.Annotated[User, lambda r: r.user]
 CurrentTeam = typing.Annotated[Team, lambda r: r.state.team]
 CurrentMembership = typing.Annotated[TeamMember, lambda r: r.state.team_member]
+PageNumber = typing.Annotated[int, lambda r: get_page_number(r)]
+PageSize = typing.Annotated[int, lambda r: get_page_size(r)]

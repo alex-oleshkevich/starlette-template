@@ -9,7 +9,7 @@ from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
 from app.config import rate_limit
-from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser, DbSession, Files
+from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser, DbSession, Files, PageNumber, PageSize
 from app.config.templating import templates
 from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
@@ -73,25 +73,31 @@ async def settings_view(request: Request, dbsession: DbSession, team: CurrentTea
 
 
 @routes.get_or_post("/teams/members", name="teams.members")
-async def members_view(request: Request, dbsession: DbSession, team: CurrentTeam) -> Response:
+async def members_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
+) -> Response:
     repo = TeamRepo(dbsession)
-    members = await repo.get_team_members(team.id)
-    invites = await repo.get_invites(team.id)
-
+    members = await repo.get_team_members(team.id, page=page_number, page_size=page_size)
     template_name = "web/teams/members.html"
     if htmx.is_htmx_request(request):
-        if htmx.matches_target(request, "members"):
-            template_name = "web/teams/members_view.html"
-        if htmx.matches_target(request, "invitations"):
-            template_name = "web/teams/invites_view.html"
+        template_name = "web/teams/members_list.html"
+    return templates.TemplateResponse(request, template_name, {"page_title": _("Members"), "members": members})
 
-    return templates.TemplateResponse(
-        request, template_name, {"page_title": _("Members"), "members": members, "invites": invites}
-    )
+
+@routes.get("/teams/invites", name="teams.invites")
+async def invites_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
+) -> Response:
+    repo = TeamRepo(dbsession)
+    invites = await repo.get_invites(team.id, page=page_number, page_size=page_size)
+    template_name = "web/teams/invites.html"
+    if htmx.is_htmx_request(request):
+        template_name = "web/teams/invites_list.html"
+    return templates.TemplateResponse(request, template_name, {"invites": invites, "page_title": _("Invites")})
 
 
 @routes.get_or_post("/teams/members/invite", name="teams.members.invite")
-async def invite_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
+async def send_invite_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
     repo = TeamRepo(dbsession)
     roles = await repo.get_roles(team_member.team.id)
     form = await create_form(request, InviteForm)
@@ -130,7 +136,7 @@ async def invite_view(request: Request, dbsession: DbSession, team_member: Curre
                 )
                 .success_toast(_("Invites have been sent."))
                 .close_modal()
-                .trigger("refresh-invitations")
+                .trigger("refresh")
             )
 
     return templates.TemplateResponse(request, "web/teams/invite_form.html", {"form": form}, status_code=status_code)
@@ -141,7 +147,7 @@ async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id:
     repo = TeamRepo(dbsession)
     member = await repo.get_team_member_by_id(team.id, member_id)
     if not member:
-        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Member not found.")).trigger("refresh-members")
+        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Member not found.")).trigger("refresh")
 
     if member.is_suspended:
         member.unsuspend()
@@ -151,7 +157,7 @@ async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id:
         message = _("Member has been deactivated.")
 
     await dbsession.commit()
-    return htmx.response().success_toast(message).trigger("refresh-members")
+    return htmx.response().success_toast(message).trigger("refresh")
 
 
 @routes.post("/teams/invites/cancel/{invite_id:int}", name="teams.invites.cancel")
@@ -159,15 +165,11 @@ async def cancel_invitation_view(dbsession: DbSession, team: CurrentTeam, invite
     repo = TeamRepo(dbsession)
     invitation = await repo.get_invitation(team.id, invite_id)
     if not invitation:
-        return (
-            htmx.response(status.HTTP_404_NOT_FOUND)
-            .error_toast(_("Invitation not found."))
-            .trigger("refresh-invitations")
-        )
+        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Invitation not found.")).trigger("refresh")
 
     await dbsession.delete(invitation)
     await dbsession.commit()
-    return htmx.response().success_toast(_("Member has been deactivated.")).trigger("refresh-invitations")
+    return htmx.response().success_toast(_("Member has been deactivated.")).trigger("refresh")
 
 
 @routes.post("/teams/invites/resend/{invite_id:int}", name="teams.invites.resend")
@@ -177,11 +179,7 @@ async def resend_invitation_view(
     repo = TeamRepo(dbsession)
     invitation = await repo.get_invitation(team.id, invite_id)
     if not invitation:
-        return (
-            htmx.response(status.HTTP_404_NOT_FOUND)
-            .error_toast(_("Invitation not found."))
-            .trigger("refresh-invitations")
-        )
+        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Invitation not found.")).trigger("refresh")
 
     try:
         limiter = rate_limit.RateLimiter(
@@ -207,9 +205,7 @@ async def resend_invitation_view(
     await dbsession.flush([invitation])
     await dbsession.commit()
     task = BackgroundTask(send_team_invitation_email, invite, link)
-    return (
-        htmx.response(background=task).success_toast(_("Member has been deactivated.")).trigger("refresh-invitations")
-    )
+    return htmx.response(background=task).success_toast(_("Member has been deactivated.")).trigger("refresh")
 
 
 @routes.get_or_post("/teams/roles", name="teams.roles")

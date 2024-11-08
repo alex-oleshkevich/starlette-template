@@ -108,7 +108,7 @@ class TeamMember(Base, WithTimestamps):
             str(self.user),
             _("(suspended)") if self.is_suspended else "",
         ]
-        return " ".join(components)
+        return " ".join([str(x) for x in components])
 
 
 class InvitationToken:

@@ -454,4 +454,12 @@
         @apply px-5 py-4;
     }
 
+    .pagination {
+        @apply flex gap-5 items-center justify-between text-sm font-medium;
+    }
+
+    .pagination-controls {
+        @apply flex items-center;
+    }
+
 }

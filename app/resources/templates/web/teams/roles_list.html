@@ -1,0 +1,63 @@
+{% import 'web/teams/lib.macro.html' as teams %}
+{% import 'lib/pagination.html' as pagination %}
+
+<div class="relative overflow-x-auto space-y-3"
+     hx-get="{{ request.url }}"
+     hx-boost="true"
+     hx-target="this"
+     hx-trigger="refresh from:body">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>{{ _('Name') }}</th>
+            <th>{{ _('Members') }}</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for role in roles %}
+            <tr>
+                <td>{{ role }}</td>
+                <td>
+                    {{ role.members_count }}
+                </td>
+                <td>
+                    <div class="flex items-center justify-end gap-2">
+                        <o-popover placement="bottom-end" target="#role-{{ role.id }}">
+                            <button type="button" class="btn btn-text btn-rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round"
+                                     class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                    <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                    <path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                                </svg>
+                            </button>
+                        </o-popover>
+                        <div class="dropdown" id="role-{{ role.id }}">
+                            <nav class="list-menu">
+                                <button type="button"
+                                        hx-get="{{ url('teams.roles.edit', role_id=role.id) }}"
+                                        hx-target="x-modals"
+                                >
+                                    {{ _('Edit') }}
+                                </button>
+                                <button type="button" {% if not role.deletable %}disabled title="{{ _('Role has members.r') }}" {% endif %}
+                                        hx-confirm="{{ _('Are you sure you want to delete this role?') }}"
+                                        hx-post="{{ url('teams.roles.delete', role_id=role.id) }}">
+                                    {{ _('Delete') }}
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {{ pagination.pagination(request, roles) }}
+</div>

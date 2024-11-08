@@ -291,13 +291,19 @@
     .list-menu > a,
     .list-menu > button {
         @apply px-4 py-2 text-sm text-gray-900 flex items-center gap-2 w-full font-medium;
-        @apply hover:bg-gray-100 hover:no-underline;
-        @apply active:bg-gray-200;
+        @apply active:bg-gray-200 hover:no-underline;
         @apply dark:hover:bg-gray-800 dark:text-white;
 
+        &:not([disabled]):hover {
+            @apply bg-gray-100;
+        }
 
-        &.active {
+        &:not([disabled]).active {
             @apply bg-gray-200;
+        }
+
+        &[disabled] {
+            @apply text-gray-400;
         }
     }
 

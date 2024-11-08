@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload, with_expression
 from starlette_sqlalchemy import Collection, Page, PageNumberPaginator, Repo
 
 from app.config.crypto import hash_value
@@ -35,23 +35,39 @@ class TeamRepo(Repo[Team]):
         stmt = self.memberships.get_base_query().where(TeamMember.id == member_id, TeamMember.team_id == team_id)
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 
-    async def get_team_members(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamMember]:
+    async def get_team_members_paginated(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamMember]:
         stmt = self.memberships.get_base_query().where(TeamMember.team_id == team_id)
         pager = PageNumberPaginator(self.dbsession)
         return await pager.paginate(stmt, page=page, page_size=page_size)
 
-    async def get_invites(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamInvite]:
+    async def get_invites_paginated(self, team_id: int, *, page: int = 1, page_size: int = 50) -> Page[TeamInvite]:
         stmt = self.invites.get_base_query().where(TeamInvite.team_id == team_id)
         paginator = PageNumberPaginator(self.dbsession)
         return await paginator.paginate(stmt, page=page, page_size=page_size)
 
-    async def get_role(self, team_id: int, role_id: int) -> TeamRole | None:
+    async def get_role(self, team_id: int, role_id: int, *, load_members: bool = False) -> TeamRole | None:
         stmt = self.roles.get_base_query().where(TeamRole.team_id == team_id, TeamRole.id == role_id)
+        if load_members:
+            stmt = stmt.options(selectinload(TeamRole.members))
         return await self.query.one_or_none(stmt)  # type: ignore[arg-type]
 
     async def get_roles(self, team_id: int) -> Collection[TeamRole]:
         stmt = self.roles.get_base_query().where(TeamRole.team_id == team_id)
         return await self.query.all(stmt)
+
+    async def get_roles_paginated(self, team_id: int, *, page: int, page_size: int = 50) -> Page[TeamRole]:
+        stmt = (
+            self.roles.get_base_query()
+            .where(TeamRole.team_id == team_id)
+            .options(
+                with_expression(
+                    TeamRole.members_count,
+                    sa.select(sa.func.count()).where(TeamMember.role_id == TeamRole.id),  # type: ignore[arg-type]
+                )
+            )
+        )
+        paginator = PageNumberPaginator(self.dbsession)
+        return await paginator.paginate(stmt, page=page, page_size=page_size)
 
     async def get_invitation(self, team_id: int, invite_id: int) -> TeamInvite | None:
         stmt = self.invites.get_base_query().where(TeamInvite.team_id == team_id, TeamInvite.id == invite_id)

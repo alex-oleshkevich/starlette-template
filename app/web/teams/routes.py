@@ -13,14 +13,14 @@ from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser,
 from app.config.templating import templates
 from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
-from app.contexts.teams.models import InvitationToken, TeamInvite
+from app.contexts.teams.models import InvitationToken, TeamInvite, TeamRole
 from app.contexts.teams.repo import TeamRepo
 from app.contrib import forms, htmx
 from app.contrib.forms import create_form
 from app.contrib.urls import redirect_later, safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
-from app.web.teams.forms import GeneralSettingsForm, InviteForm
+from app.web.teams.forms import EditRoleForm, GeneralSettingsForm, InviteForm
 
 routes = RouteGroup()
 team_invitation_public_routes = RouteGroup()
@@ -77,7 +77,7 @@ async def members_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
 ) -> Response:
     repo = TeamRepo(dbsession)
-    members = await repo.get_team_members(team.id, page=page_number, page_size=page_size)
+    members = await repo.get_team_members_paginated(team.id, page=page_number, page_size=page_size)
     template_name = "web/teams/members.html"
     if htmx.is_htmx_request(request):
         template_name = "web/teams/members_list.html"
@@ -89,7 +89,7 @@ async def invites_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
 ) -> Response:
     repo = TeamRepo(dbsession)
-    invites = await repo.get_invites(team.id, page=page_number, page_size=page_size)
+    invites = await repo.get_invites_paginated(team.id, page=page_number, page_size=page_size)
     template_name = "web/teams/invites.html"
     if htmx.is_htmx_request(request):
         template_name = "web/teams/invites_list.html"
@@ -101,7 +101,7 @@ async def send_invite_view(request: Request, dbsession: DbSession, team_member: 
     repo = TeamRepo(dbsession)
     roles = await repo.get_roles(team_member.team.id)
     form = await create_form(request, InviteForm)
-    form.setup(roles)
+    form.setup(list(roles))
     status_code = status.HTTP_200_OK
     if await forms.validate_on_submit(request, form):
         emails = [email.strip() for email in form.email.data.split(",") if email.strip()]  # type: ignore[union-attr]
@@ -149,6 +149,10 @@ async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id:
     if not member:
         return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Member not found.")).trigger("refresh")
 
+    # suspend/resume is not applicable to team owner
+    if team.owner == member.user:
+        return htmx.response(status.HTTP_400_BAD_REQUEST).error_toast(_("Team owner cannot be suspended."))
+
     if member.is_suspended:
         member.unsuspend()
         message = _("Member has been activated.")
@@ -158,6 +162,17 @@ async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id:
 
     await dbsession.commit()
     return htmx.response().success_toast(message).trigger("refresh")
+
+
+@routes.post("/teams/members/leave", name="teams.members.leave")
+async def leave_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
+    # suspend/resume is not applicable to team owner
+    if team_member.team.owner == team_member.user:
+        return htmx.response(status.HTTP_400_BAD_REQUEST).error_toast(_("Team owner cannot be suspended."))
+
+    team_member.suspend()
+    await dbsession.commit()
+    return RedirectResponse(request.url_for("dashboard"), status_code=status.HTTP_302_FOUND)
 
 
 @routes.post("/teams/invites/cancel/{invite_id:int}", name="teams.invites.cancel")
@@ -209,10 +224,52 @@ async def resend_invitation_view(
 
 
 @routes.get_or_post("/teams/roles", name="teams.roles")
-async def roles_view(request: Request, dbsession: DbSession, team: CurrentTeam) -> Response:
+async def roles_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
+) -> Response:
     repo = TeamRepo(dbsession)
-    members = await repo.get_team_members(team.id)
-    return templates.TemplateResponse(request, "web/teams/members.html", {"page_title": _("Roles"), "members": members})
+    roles = await repo.get_roles_paginated(team.id, page=page_number, page_size=page_size)
+    template_name = "web/teams/roles.html"
+    if htmx.is_htmx_request(request):
+        template_name = "web/teams/roles_list.html"
+    return templates.TemplateResponse(request, template_name, {"page_title": _("Roles"), "roles": roles})
+
+
+@routes.get_or_post("/teams/roles/new", name="teams.roles.create")
+@routes.get_or_post("/teams/roles/edit/{role_id:int}", name="teams.roles.edit")
+async def edit_role_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int] | None
+) -> Response:
+    repo = TeamRepo(dbsession)
+    instance: TeamRole | None = TeamRole(team=team)
+    if role_id:
+        instance = await repo.get_role(team.id, role_id)
+        if not instance:
+            return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Role not found.")).trigger("refresh")
+
+    form = await create_form(request, EditRoleForm, obj=instance)
+    if await forms.validate_on_submit(request, form):
+        dbsession.add(instance)
+        form.populate_obj(instance)
+        await dbsession.commit()
+        return htmx.response().success_toast(_("Role has been saved.")).close_modal().trigger("refresh")
+
+    return templates.TemplateResponse(request, "web/teams/role_form.html", {"form": form})
+
+
+@routes.post("/teams/roles/delete/{role_id:int}", name="teams.roles.delete")
+async def delete_role_view(dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int]) -> Response:
+    repo = TeamRepo(dbsession)
+    instance = await repo.get_role(team.id, role_id, load_members=True)
+    if not instance:
+        return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Role not found.")).trigger("refresh")
+
+    if len(instance.members):
+        return htmx.response(status.HTTP_400_BAD_REQUEST).error_toast(_("Role has members assigned."))
+
+    await dbsession.delete(instance)
+    await dbsession.commit()
+    return htmx.response().success_toast(_("Role has been deleted.")).trigger("refresh")
 
 
 @team_invitation_public_routes.get("/teams/members/accept-invite/{token}", name="teams.members.accept_invite")

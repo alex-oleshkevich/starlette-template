@@ -2,7 +2,7 @@ import contextlib
 
 from starlette.requests import Request
 
-page_size = 2
+page_size = 50
 max_page_size = 100
 
 

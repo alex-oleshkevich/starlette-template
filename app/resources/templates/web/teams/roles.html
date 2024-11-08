@@ -1,0 +1,16 @@
+{% extends 'web/teams/settings_layout.html' %}
+{% import 'lib/forms.html' as forms with context %}
+
+{% block page_actions %}
+    <button class="btn btn-accent" type="button"
+            hx-get="{{ url('teams.roles.create') }}"
+            hx-target="x-modals"
+    >
+        {{ _('Create role') }}
+    </button>
+{% endblock %}
+
+
+{% block page %}
+    {% include 'web/teams/roles_list.html' %}
+{% endblock %}

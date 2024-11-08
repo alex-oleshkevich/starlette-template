@@ -5,7 +5,7 @@ import uuid
 
 import sqlalchemy as sa
 from colorhash import ColorHash
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, query_expression, relationship
 from starlette.datastructures import URL
 from starlette.requests import Request
 from starlette_babel import gettext_lazy as _
@@ -66,6 +66,12 @@ class TeamRole(Base, WithTimestamps):
     team: Mapped[Team] = relationship(Team, back_populates="roles")
     members: Mapped[list[TeamMember]] = relationship("TeamMember", back_populates="role")
     invites: Mapped[list[TeamInvite]] = relationship("TeamInvite", cascade="all, delete-orphan", back_populates="role")
+
+    members_count: Mapped[int] = query_expression()
+
+    @property
+    def deletable(self) -> bool:
+        return self.members_count == 0
 
 
 class TeamMember(Base, WithTimestamps):

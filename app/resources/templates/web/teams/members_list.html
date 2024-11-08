@@ -23,6 +23,9 @@
                     {% if member.team.owner == member.user %}
                         <span class="badge badge-blue ms-2">{{ _('Owner') }}</span>
                     {% endif %}
+                    {% if member.user == current_user %}
+                        <span class="badge badge-pink ms-2">{{ _('You') }}</span>
+                    {% endif %}
                 </td>
                 <td>{{ member.role }}</td>
                 <td>
@@ -35,8 +38,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                      fill="none"
                                      stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                     stroke-linejoin="round"
-                                     class="icon icon-tabler icons-tabler-outline icon-tabler-dots-vertical">
+                                     stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                     <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
                                     <path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
@@ -46,16 +48,23 @@
                         </o-popover>
                         <div class="dropdown" id="member-{{ member.id }}">
                             <nav class="list-menu">
-                                {% if team.owner != member.user %}
-                                    <button type="button"
-                                            hx-confirm="{{ _('Are you sure you want to deactivate this member?') }}"
-                                            hx-post="{{ url('teams.members.toggle_status', member_id=member.id) }}">
-                                        {% if member.is_suspended %}
-                                            {{ _('Activate') }}
-                                        {% else %}
-                                            {{ _('Suspend') }}
-                                        {% endif %}
-                                    </button>
+                                <button type="button" {% if current_team.owner == member.user %}disabled title="{{ _('Team owner cannot be suspended.') }}"{% endif %}
+                                        hx-confirm="{{ _('Are you sure you want to deactivate this member?') }}"
+                                        hx-post="{{ url('teams.members.toggle_status', member_id=member.id) }}">
+                                    {% if member.is_suspended %}
+                                        {{ _('Activate') }}
+                                    {% else %}
+                                        {{ _('Suspend') }}
+                                    {% endif %}
+                                </button>
+                                {% if member.user == current_user %}
+                                    {% if current_team.owner != member.user %}
+                                        <button type="button"
+                                                hx-confirm="{{ _('Are you sure you want to leave this team?') }}"
+                                                hx-post="{{ url('teams.members.leave') }}">
+                                            {{ _('Leave') }}
+                                        </button>
+                                    {% endif %}
                                 {% endif %}
                             </nav>
                         </div>

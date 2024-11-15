@@ -19,7 +19,7 @@ def cache_backend_factory(cache_url: str) -> CacheBackend:
     if schema in ("redis", "rediss"):
         return RedisCacheBackend(Redis.from_url(cache_url))
 
-    raise NotImplementedError(f"Unknown cache backend {schema}.")  # noqa: EM102
+    raise NotImplementedError(f"Unknown cache backend {schema}.")
 
 
 cache = Cache(

@@ -24,7 +24,7 @@ class AppError(Exception):
     ) -> None:
         error_code = error_code or self.error_code
         error_message = error_code.description if error_code else ""
-        self.message = message or error_message or self.message
+        self.message = str(message or error_message or self.message)
         self.error_code = error_code
         super().__init__(self.message)
 

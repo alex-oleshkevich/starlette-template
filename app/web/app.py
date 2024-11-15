@@ -11,8 +11,12 @@ from starsessions.stores.redis import RedisStore
 from app.config import redis, settings
 from app.config.environment import Environment
 from app.contexts.auth.authentication import db_user_loader
+from app.contexts.billing.middleware import SubscriptionMiddleware
 from app.contexts.teams.middleware import RequireTeamMiddleware, TeamMiddleware
 from app.web.auth.routes import routes as login_routes
+from app.web.billing.routes import routes as billing_routes
+from app.web.billing.routes_stripe import routes as stripe_routes
+from app.web.billing.routes_stripe_public import routes as public_stripe_routes
 from app.web.dashboard.routes import routes as dashboard_routes
 from app.web.internal.routes import routes as internal_routes
 from app.web.profile.routes import routes as profile_routes
@@ -46,6 +50,7 @@ web_router = Router(
             internal_routes,
             login_routes,
             register_routes,
+            public_stripe_routes,
             team_invitation_public_routes,
             Route("/", RedirectResponse("/app", status_code=302), name="home"),
             Mount(
@@ -54,11 +59,14 @@ web_router = Router(
                     Middleware(LoginRequiredMiddleware, path_name="login"),
                     Middleware(TeamMiddleware, cookie_name=settings.team_cookie, query_param="team_id"),
                     Middleware(RequireTeamMiddleware, redirect_path_name="teams.select"),
+                    Middleware(SubscriptionMiddleware),
                 ],
                 routes=RouteGroup(
                     children=[
                         dashboard_routes,
                         profile_routes,
+                        billing_routes,
+                        stripe_routes,
                         teams_routes,
                     ]
                 ),

@@ -62,7 +62,7 @@ class TeamRepo(Repo[Team]):
             .options(
                 with_expression(
                     TeamRole.members_count,
-                    sa.select(sa.func.count()).where(TeamMember.role_id == TeamRole.id),  # type: ignore[arg-type]
+                    sa.select(sa.func.count()).where(TeamMember.role_id == TeamRole.id).scalar_subquery(),
                 )
             )
         )

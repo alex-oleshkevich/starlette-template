@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import typing
 import uuid
 
@@ -10,7 +11,7 @@ from starlette.applications import Starlette
 from starlette.requests import Request
 
 from app.config.crypto import make_password
-from app.contexts.subscriptions.models import SubscriptionPlan
+from app.contexts.billing.models import Subscription, SubscriptionPlan
 from app.contexts.teams.models import Team, TeamInvite, TeamMember, TeamRole
 from app.contexts.users.models import User
 from tests.database import SyncSession
@@ -68,10 +69,6 @@ class UserFactory(BaseModelFactory):
 
 class SubscriptionPlanFactory(BaseModelFactory):
     name: str = factory.Faker("word")
-    description: str = factory.Faker("sentence")
-    price: float = 10000
-    is_default: bool = False
-    is_archived: bool = False
 
     class Meta:
         model = SubscriptionPlan
@@ -119,3 +116,16 @@ class TeamInviteFactory(BaseModelFactory):
 
     class Meta:
         model = TeamInvite
+
+
+class SubscriptionFactory(BaseModelFactory):
+    team: Team = factory.SubFactory(TeamFactory)
+    plan: SubscriptionPlan = factory.SubFactory(SubscriptionPlanFactory)
+    status: Subscription.Status = Subscription.Status.ACTIVE
+    created_at: datetime.datetime = factory.LazyFunction(lambda: datetime.datetime.now(datetime.UTC))
+    expires_at: datetime.datetime = factory.LazyFunction(
+        lambda: datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=30)
+    )
+
+    class Meta:
+        model = Subscription

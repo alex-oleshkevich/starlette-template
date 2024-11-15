@@ -77,7 +77,7 @@
     }
 
     .sidebar main {
-        @apply flex-grow overflow-y-auto;
+        @apply flex-grow overflow-y-auto flex flex-col;
     }
 
     .sidebar-menu {
@@ -438,6 +438,18 @@
     .modal {
         @apply w-full max-w-2xl max-h-full m-2 md:m-0;
         @apply relative bg-white rounded-lg shadow dark:bg-gray-700;
+    }
+
+    .modal-lg {
+        @apply max-w-3xl;
+    }
+
+    .modal-xl {
+        @apply max-w-4xl;
+    }
+
+    .modal-2xl {
+        @apply max-w-5xl;
     }
 
     .modal header, .modal-header {

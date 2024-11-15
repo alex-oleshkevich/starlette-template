@@ -16,12 +16,11 @@ from app.config import rate_limit
 from app.config.dependencies import CurrentUser, DbSession, Settings
 from app.config.templating import templates
 from app.contexts.auth.authentication import login_required
+from app.contexts.billing.models import Subscription
 from app.contexts.register.exceptions import InvalidVerificationTokenError, RegisterError
 from app.contexts.register.mails import send_email_verification_link
 from app.contexts.register.registration import register_user
 from app.contexts.register.verification import confirm_user_email, get_verified_email, make_verification_token
-from app.contexts.subscriptions.models import Subscription
-from app.contexts.subscriptions.repo import SubscriptionRepo
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms
 from app.contrib.forms import validate_on_submit
@@ -44,11 +43,6 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
         case True:
             try:
                 await limiter.hit_or_raise(get_client_ip(request))
-                subscription_repo = SubscriptionRepo(dbsession)
-                subscription_plan = await subscription_repo.get_default_plan()
-                if not subscription_plan:
-                    raise RegisterError(_("No subscription plan found."))
-
                 user = await register_user(
                     dbsession,
                     email=form.email.data,  # type: ignore[arg-type]
@@ -58,7 +52,6 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
                     language=get_locale().language,
                     timezone=str(get_timezone()),
                     auto_renew_subscription=True,
-                    subscription_plan=subscription_plan,
                     subscription_status=Subscription.Status.TRIALING,
                     subscription_duration=datetime.timedelta(days=30),
                     auto_confirm=not settings.register_require_email_confirmation,

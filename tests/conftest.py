@@ -17,7 +17,7 @@ from app.config import mailers
 from app.config import settings as app_settings
 from app.config.database import new_dbsession
 from app.config.settings import Config
-from app.contexts.subscriptions.models import SubscriptionPlan
+from app.contexts.billing.models import SubscriptionPlan
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 from app.contrib.storage import StorageType
@@ -86,10 +86,10 @@ def user() -> User:
 
 @pytest.fixture()
 def subscription_plan(dbsession_sync: Session) -> typing.Generator[SubscriptionPlan, None, None]:
-    stmt = sa.select(SubscriptionPlan).where(SubscriptionPlan.is_default.is_(True))
+    stmt = sa.select(SubscriptionPlan)
     plan = dbsession_sync.scalars(stmt).one_or_none()
     if not plan:
-        plan = SubscriptionPlanFactory(is_default=True, price=0)
+        plan = SubscriptionPlanFactory(price=0)
         dbsession_sync.add(plan)
         dbsession_sync.commit()
     yield plan
@@ -152,14 +152,3 @@ async def auth_client(
 @pytest.fixture
 def http_request(app: Starlette, dbsession: AsyncSession) -> Request:
     return RequestFactory(scope=RequestScopeFactory(app=app, state={"dbsession": dbsession}))
-
-
-@pytest.fixture()
-def free_subscription_plan(dbsession_sync: Session) -> typing.Generator[SubscriptionPlan, None, None]:
-    stmt = sa.select(SubscriptionPlan).where(SubscriptionPlan.is_default.is_(True))
-    plan = dbsession_sync.scalars(stmt).one_or_none()
-    if not plan:
-        plan = SubscriptionPlanFactory(is_default=True, price=0)
-        dbsession_sync.add(plan)
-        dbsession_sync.commit()
-    yield plan

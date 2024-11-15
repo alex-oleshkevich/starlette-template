@@ -50,6 +50,7 @@ rich = "^13.9.2"
 starlette-auth = "^0.2"
 authlib = "^1.3.2"
 colorhash = "^2.0.0"
+stripe = "^11.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.24"
@@ -119,6 +120,7 @@ ignore = [
     'ERA001',
     'S105',
     'S106',
+    'EM102',
     'B904',
     'ARG005', # Unused lambda argument
     'G004', # Logging statement uses f-string

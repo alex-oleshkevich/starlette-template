@@ -11,6 +11,8 @@ from app.config import settings
 from app.config.database import new_dbsession
 from app.config.files import file_storage
 from app.config.sentry import configure_sentry
+from app.error_handlers import on_app_error
+from app.exceptions import AppError
 from app.web.app import web_router
 
 install_error_handler()
@@ -34,4 +36,7 @@ app = Starlette(
         Mount("", web_router),
     ],
     middleware=global_middleware,
+    exception_handlers={
+        AppError: on_app_error,  # type: ignore[dict-item]
+    },
 )

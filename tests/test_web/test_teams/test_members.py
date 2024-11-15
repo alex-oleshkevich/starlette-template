@@ -1,3 +1,4 @@
+import sqlalchemy as sa
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
@@ -32,9 +33,7 @@ class TestMemberships:
         assert team_member.user == team_member.team.owner
         response = auth_client.post(f"/app/teams/members/toggle-status/{team_member.id}")
         assert response.status_code == 400
-        assert dbsession_sync.scalars(
-            dbsession_sync.query(TeamMember).filter(TeamMember.id == team_member.id)
-        ).one_or_none()
+        assert dbsession_sync.scalars(sa.select(TeamMember).where(TeamMember.id == team_member.id)).one_or_none()
 
     async def test_leave_team(
         self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session
@@ -47,7 +46,7 @@ class TestMemberships:
         assert response.status_code == 302
         assert response.headers["location"] == "http://testserver/app/"
         assert not dbsession_sync.scalars(
-            dbsession_sync.query(TeamMember).filter(TeamMember.id == team_member.id, TeamMember.suspended_at.is_(None))
+            sa.select(TeamMember).where(TeamMember.id == team_member.id, TeamMember.suspended_at.is_(None))
         ).one_or_none()
 
     def test_leave_team_owner(
@@ -57,9 +56,7 @@ class TestMemberships:
         assert team_member.user == team_member.team.owner
         response = auth_client.post("/app/teams/members/leave")
         assert response.status_code == 400
-        assert dbsession_sync.scalars(
-            dbsession_sync.query(TeamMember).filter(TeamMember.id == team_member.id)
-        ).one_or_none()
+        assert dbsession_sync.scalars(sa.select(TeamMember).where(TeamMember.id == team_member.id)).one_or_none()
 
     def test_resume_membership(
         self, auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session

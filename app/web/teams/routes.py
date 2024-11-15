@@ -9,7 +9,15 @@ from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
 from app.config import rate_limit
-from app.config.dependencies import CurrentMembership, CurrentTeam, CurrentUser, DbSession, Files, PageNumber, PageSize
+from app.config.dependencies import (
+    CurrentMembership,
+    CurrentTeam,
+    CurrentUser,
+    DbSession,
+    Files,
+    PageNumber,
+    PageSize,
+)
 from app.config.templating import templates
 from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
@@ -241,16 +249,18 @@ async def edit_role_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int] | None
 ) -> Response:
     repo = TeamRepo(dbsession)
-    instance: TeamRole | None = TeamRole(team=team)
+    instance: TeamRole | None = None
     if role_id:
         instance = await repo.get_role(team.id, role_id)
+        dbsession.add(instance)
         if not instance:
             return htmx.response(status.HTTP_404_NOT_FOUND).error_toast(_("Role not found.")).trigger("refresh")
 
+    instance = instance or TeamRole(team=team)
     form = await create_form(request, EditRoleForm, obj=instance)
     if await forms.validate_on_submit(request, form):
-        dbsession.add(instance)
         form.populate_obj(instance)
+        dbsession.add(instance)
         await dbsession.commit()
         return htmx.response().success_toast(_("Role has been saved.")).close_modal().trigger("refresh")
 

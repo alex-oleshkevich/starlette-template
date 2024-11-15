@@ -32,6 +32,7 @@ def app_processor(request: Request) -> dict[str, typing.Any]:
         "css_classes": css_classes,
         "current_team": getattr(request.state, "team", None),
         "current_team_member": getattr(request.state, "team_member", None),
+        "current_subscription": getattr(request.state, "subscription", None),
         "team_memberships": getattr(request.state, "team_memberships", []),
         **(getattr(request.state, "template_context", {})),
     }

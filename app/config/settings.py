@@ -108,6 +108,12 @@ class Config(BaseSettings):
     # teams
     team_cookie: str = "team_id"
 
+    # stripe settings
+    stripe_pricing_table_id: str = ""
+    stripe_secret_key: str = ""
+    stripe_public_key: str = ""
+    stripe_webhook_secret: str = ""
+
 
 class TestConfig(Config):
     """Configuration for unit tests.

@@ -1,23 +1,28 @@
 {% extends 'layouts/app.html' %}
 
-{% block page_actions %}
-    {% if current_subscription %}
-        {% include 'web/billing/partial_page_actions.html' %}
-    {% endif %}
-{% endblock %}
-
 {% block content %}
     {% if not current_subscription %}
         <p>{% trans %}Choose a plan that fits your needs.{% endtrans %}</p>
         {% include 'web/billing/stripe_pricing_table.html' %}
     {% else %}
-        <div>{{ current_subscription.plan }}</div>
-        <div>{{ current_subscription.status }}</div>
-        {% if not current_subscription.is_cancelled %}
+        <div class="border border-gray-300 p-3 rounded flex justify-between">
             <div>
-                {{ _('Next renewal on {date}').format(date=current_subscription.expires_at) }}
+                <div>
+                    <span class="text-lg font-medium">{{ current_subscription.plan }}</span>
+                    <span class="badge badge-blue">
+            {{ current_subscription.status }}
+            </span>
+                </div>
+                {% if not current_subscription.is_cancelled %}
+                    <div class="text-sm text-muted">
+                        {{ _('Next renewal on {date}').format(date=current_subscription.expires_at|date) }}
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
+            <div>
+                {% include 'web/billing/partial_page_actions.html' %}
+            </div>
+        </div>
     {% endif %}
 
     {#    <div class="border-2 rounded-md divide-y divide-gray-300 mb-10">#}

@@ -9,6 +9,8 @@ import faker as fakerlib
 from factory.alchemy import SQLAlchemyModelFactory
 from starlette.applications import Starlette
 from starlette.requests import Request
+from starlette.responses import Response
+from starlette.routing import Mount, Route
 
 from app.config.crypto import make_password
 from app.contexts.billing.models import Subscription, SubscriptionPlan
@@ -40,8 +42,18 @@ class RequestScopeFactory(factory.DictFactory):
     raw_path: bytes = b"/"
     query_string: bytes = b""
     root_path: str = ""
-    app: Starlette | None = None
-    state: dict[str, typing.Any] | None = None
+    app: Starlette = factory.LazyFunction(
+        lambda: Starlette(
+            debug=False,
+            routes=[
+                Route("/", lambda: Response("index"), name="home"),
+                Mount("/static", Response("static"), name="static"),
+            ],
+        )
+    )
+    user: typing.Any | None = None
+    session: dict[str, typing.Any] = factory.LazyFunction(dict)
+    state: dict[str, typing.Any] = factory.LazyFunction(dict)
     headers: tuple[tuple[bytes, bytes], ...] = (
         (b"host", b"testserver"),
         (b"connection", b"close"),

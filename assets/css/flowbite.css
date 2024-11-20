@@ -99,7 +99,7 @@
     }
 
     .btn {
-        @apply py-2 px-4 text-sm transition-colors font-medium focus:outline-none rounded-md flex justify-center items-center gap-2;
+        @apply py-2 px-4 text-sm transition-colors font-medium focus:outline-none rounded-md inline-flex justify-center items-center gap-2;
         @apply text-gray-900 bg-white border border-gray-200 leading-6;
         @apply hover:bg-gray-100 hover:text-gray-700;
         @apply focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700;

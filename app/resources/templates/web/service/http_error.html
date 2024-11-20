@@ -1,0 +1,13 @@
+{% extends 'layouts/base.html' %}
+
+{% block body %}
+    <div class="flex items-center justify-center h-full w-full p-5">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="text-7xl font-medium mb-5">{{ status_code }}</div>
+            <p class="text-xl mb-10">{{ error_message }}</p>
+            <div>
+                <a class="btn" href="{{ url('home') }}">{{ _('Go Home') }}</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

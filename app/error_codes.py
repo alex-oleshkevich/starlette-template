@@ -3,18 +3,29 @@ import dataclasses
 from starlette_babel import gettext_lazy as _
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True, frozen=True)
 class ErrorCode:
     code: str
     description: str
 
+    def __str__(self) -> str:
+        return str(self.description)
 
-SERVER_ERROR = ErrorCode("server_error", _("Application error, please try again later."))
-AUTH_INVALID_CREDENTIALS = ErrorCode("auth.invalid_credentials", _("Invalid email or password."))
-AUTH_ACCOUNT_DISABLED = ErrorCode("auth.account_disabled", _("This account is deactivated."))
-BILLING_ERROR = ErrorCode("billing.error", _("Billing error."))
-SUBSCRIPTION_ERROR = ErrorCode("subscription.error", _("Subscription error."))
-SUBSCRIPTION_REQUIRED = ErrorCode("subscription.required", _("Subscription is required."))
-SUBSCRIPTION_DUPLICATE = ErrorCode("subscription.duplicate", _("A subscription is already active."))
-SUBSCRIPTION_MISSING_PLAN = ErrorCode("subscription.plan", _("Invalid or missing subscription plan."))
+
+# Please keep the error codes sorted alphabetically
+AUTH_UNAUTHENTICATED = ErrorCode("auth.unauthenticated", _("Unauthenticated."))
+BAD_REQUEST = ErrorCode("bad_request", _("Bad request. Please check your input."))
+PERMISSION_DENIED = ErrorCode("access.denied", _("You do not have permission to access this resource."))
 RATE_LIMITED = ErrorCode("rate_limited", _("Too many requests."))
+RESOURCE_CONFLICT = ErrorCode("resource_conflict", _("This object already exists."))
+RESOURCE_NOT_FOUND = ErrorCode("resource.not_found", _("Requested resource does not exist."))
+SERVER_ERROR = ErrorCode("server_error", _("Application error, please try again later."))
+VALIDATION_ERROR = ErrorCode("validation_error", _("Invalid data. Please check your input."))
+
+AUTH_ACCOUNT_DISABLED = ErrorCode("auth.account_disabled", _("This account is deactivated."))
+AUTH_INVALID_CREDENTIALS = ErrorCode("auth.invalid_credentials", _("Invalid email or password."))
+BILLING_ERROR = ErrorCode("billing.error", _("Billing error."))
+SUBSCRIPTION_DUPLICATE = ErrorCode("subscription.duplicate", _("A subscription is already active."))
+SUBSCRIPTION_ERROR = ErrorCode("subscription.error", _("Subscription error."))
+SUBSCRIPTION_MISSING_PLAN = ErrorCode("subscription.plan", _("Invalid or missing subscription plan."))
+SUBSCRIPTION_REQUIRED = ErrorCode("subscription.required", _("Subscription is required."))

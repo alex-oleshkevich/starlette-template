@@ -13,7 +13,7 @@ from app.contexts.billing.stripe import (
     update_stripe_subscription,
 )
 from app.http.dependencies import DbSession
-from app.http.error_handlers import ErrorResponse
+from app.http.responses import JSONErrorResponse
 
 stripe.api_key = settings.stripe_secret_key
 routes = RouteGroup()
@@ -40,6 +40,6 @@ async def webhook_handler_view(request: Request, dbsession: DbSession) -> Respon
                 logger.info("stripe subscription has been deleted")
     except BillingError as ex:
         logger.exception("stripe webhook error")
-        return ErrorResponse(status_code=400, error_code=ex.error_code)
+        return JSONErrorResponse(status_code=400, error_code=ex.error_code)
     else:
         return JSONResponse({}, status_code=200)

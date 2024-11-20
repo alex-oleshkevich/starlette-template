@@ -1,6 +1,7 @@
 from async_storages.contrib.starlette import FileServer
 from starception import install_error_handler
 from starlette.applications import Starlette
+from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
@@ -10,9 +11,8 @@ from app.config import settings
 from app.config.database import new_dbsession
 from app.config.files import file_storage
 from app.config.sentry import configure_sentry
-from app.exceptions import AppError
 from app.http.api.app import api_app
-from app.http.error_handlers import on_app_error
+from app.http.error_handlers import exception_handler
 from app.http.web.app import web_router
 
 install_error_handler()
@@ -37,6 +37,6 @@ app = Starlette(
     ],
     middleware=global_middleware,
     exception_handlers={
-        AppError: on_app_error,  # type: ignore[dict-item]
+        HTTPException: exception_handler,
     },
 )

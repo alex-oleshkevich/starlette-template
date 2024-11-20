@@ -6,8 +6,8 @@ from starlette_dispatch import RouteGroup
 from starlette_flash import flash
 
 from app.config import settings
-from app.config.dependencies import RequireSubscription, Settings
 from app.config.templating import templates
+from app.http.dependencies import RequireSubscription, Settings
 
 stripe.api_key = settings.stripe_secret_key
 routes = RouteGroup()

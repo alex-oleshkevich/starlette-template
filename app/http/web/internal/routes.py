@@ -2,7 +2,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette_dispatch import RouteGroup
 
-from app.config.dependencies import Settings
+from app.http.dependencies import Settings
 
 routes = RouteGroup()
 

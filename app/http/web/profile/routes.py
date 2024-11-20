@@ -8,12 +8,12 @@ from starlette_dispatch import RouteGroup
 from starlette_flash import flash
 
 from app.config.crypto import averify_password, make_password
-from app.config.dependencies import CurrentUser, DbSession
 from app.config.templating import templates
 from app.contexts.auth.mails import send_account_deleted_mail, send_password_changed_mail
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms, htmx
-from app.web.profile.forms import PasswordForm, ProfileForm
+from app.http.dependencies import CurrentUser, DbSession
+from app.http.web.profile.forms import PasswordForm, ProfileForm
 
 routes = RouteGroup()
 

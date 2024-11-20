@@ -18,7 +18,6 @@ from starlette_flash import flash
 
 from app.config import crypto, rate_limit, settings
 from app.config.crypto import make_password
-from app.config.dependencies import DbSession
 from app.config.templating import templates
 from app.contexts.auth.authentication import (
     authenticate_by_email,
@@ -33,7 +32,8 @@ from app.contrib import forms
 from app.contrib.urls import resolve_redirect_url, safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
-from app.web.auth.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
+from app.http.dependencies import DbSession
+from app.http.web.auth.forms import ChangePasswordForm, ForgotPasswordForm, LoginForm
 
 routes = RouteGroup()
 login_rate_limit = limits.parse("3/minute")

@@ -13,16 +13,16 @@ from app.config.environment import Environment
 from app.contexts.auth.authentication import db_user_loader
 from app.contexts.billing.middleware import SubscriptionMiddleware
 from app.contexts.teams.middleware import RequireTeamMiddleware, TeamMiddleware
-from app.web.auth.routes import routes as login_routes
-from app.web.billing.routes import routes as billing_routes
-from app.web.billing.routes_stripe import routes as stripe_routes
-from app.web.billing.routes_stripe_public import routes as public_stripe_routes
-from app.web.dashboard.routes import routes as dashboard_routes
-from app.web.internal.routes import routes as internal_routes
-from app.web.profile.routes import routes as profile_routes
-from app.web.register.routes import routes as register_routes
-from app.web.teams.routes import routes as teams_routes
-from app.web.teams.routes import team_invitation_public_routes
+from app.http.web.auth.routes import routes as login_routes
+from app.http.web.billing.routes import routes as billing_routes
+from app.http.web.billing.routes_stripe import routes as stripe_routes
+from app.http.web.billing.routes_stripe_public import routes as public_stripe_routes
+from app.http.web.dashboard.routes import routes as dashboard_routes
+from app.http.web.internal.routes import routes as internal_routes
+from app.http.web.profile.routes import routes as profile_routes
+from app.http.web.register.routes import routes as register_routes
+from app.http.web.teams.routes import routes as teams_routes
+from app.http.web.teams.routes import team_invitation_public_routes
 
 session_backend = InMemoryStore() if settings.is_test else RedisStore(connection=redis.redis)
 

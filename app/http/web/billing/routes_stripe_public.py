@@ -6,14 +6,14 @@ from starlette.responses import JSONResponse, Response
 from starlette_dispatch import RouteGroup
 
 from app.config import settings
-from app.config.dependencies import DbSession
 from app.contexts.billing.exceptions import BillingError
 from app.contexts.billing.stripe import (
     cancel_stripe_subscription,
     create_stripe_subscription,
     update_stripe_subscription,
 )
-from app.error_handlers import ErrorResponse
+from app.http.dependencies import DbSession
+from app.http.error_handlers import ErrorResponse
 
 stripe.api_key = settings.stripe_secret_key
 routes = RouteGroup()

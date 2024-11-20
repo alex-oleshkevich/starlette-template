@@ -13,7 +13,6 @@ from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
 from app.config import rate_limit
-from app.config.dependencies import CurrentUser, DbSession, Settings
 from app.config.templating import templates
 from app.contexts.auth.authentication import login_required
 from app.contexts.billing.models import Subscription
@@ -27,7 +26,8 @@ from app.contrib.forms import validate_on_submit
 from app.contrib.urls import resolve_redirect_url
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
-from app.web.register.forms import RegisterForm
+from app.http.dependencies import CurrentUser, DbSession, Settings
+from app.http.web.register.forms import RegisterForm
 
 routes = RouteGroup()
 register_rate_limit = limits.parse("3/minute")

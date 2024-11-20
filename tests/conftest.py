@@ -12,7 +12,6 @@ from starlette.testclient import TestClient
 from starlette_babel import switch_locale, switch_timezone
 from starsessions import InMemoryStore, SessionStore
 
-from app.asgi import app as starlette_app
 from app.config import mailers
 from app.config import settings as app_settings
 from app.config.database import new_dbsession
@@ -22,7 +21,8 @@ from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 from app.contrib.storage import StorageType
 from app.contrib.testing import TestAuthClient
-from app.web.app import session_backend as app_session_backend
+from app.http.asgi import app as starlette_app
+from app.http.web.app import session_backend as app_session_backend
 from tests import database
 from tests.factories import (
     RequestFactory,

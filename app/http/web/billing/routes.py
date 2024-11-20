@@ -3,9 +3,9 @@ from starlette.responses import RedirectResponse, Response
 from starlette_babel import gettext_lazy as _
 from starlette_dispatch import RouteGroup
 
-from app.config.dependencies import CurrentSubscription, DbSession
 from app.config.templating import templates
 from app.contexts.billing.repo import SubscriptionRepo
+from app.http.dependencies import CurrentSubscription, DbSession
 
 routes = RouteGroup()
 

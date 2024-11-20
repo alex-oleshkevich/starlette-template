@@ -5,9 +5,9 @@ from mailers.pytest_plugin import Mailbox
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
-from app.config.dependencies import Settings
 from app.contexts.teams.models import InvitationToken, Team, TeamInvite, TeamMember, TeamRole
 from app.contrib.testing import TestAuthClient, as_htmx_response
+from app.http.dependencies import Settings
 from tests.factories import TeamInviteFactory, TeamMemberFactory, TeamRoleFactory, UserFactory
 
 
@@ -338,7 +338,7 @@ class TestInvitations:
     def test_resend_invitation(
         self, auth_client: TestAuthClient, monkeypatch: pytest.MonkeyPatch, team_member: TeamMember, mailbox: Mailbox
     ) -> None:
-        monkeypatch.setattr("app.web.teams.routes.resent_invite_rate_limit", limits.parse("100/minute"))
+        monkeypatch.setattr("app.http.web.teams.routes.resent_invite_rate_limit", limits.parse("100/minute"))
 
         response = auth_client.post("/app/teams/invites/resend/-1")
         assert response.status_code == 404
@@ -360,7 +360,7 @@ class TestInvitations:
         mailbox: Mailbox,
         dbsession_sync: Session,
     ) -> None:
-        monkeypatch.setattr("app.web.teams.routes.resent_invite_rate_limit", limits.parse("1/minute"))
+        monkeypatch.setattr("app.http.web.teams.routes.resent_invite_rate_limit", limits.parse("1/minute"))
 
         user = UserFactory()
         team_member = TeamMemberFactory(team=team_member.team, user=user)

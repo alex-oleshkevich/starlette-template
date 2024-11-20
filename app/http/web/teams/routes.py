@@ -9,15 +9,6 @@ from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
 from app.config import rate_limit
-from app.config.dependencies import (
-    CurrentMembership,
-    CurrentTeam,
-    CurrentUser,
-    DbSession,
-    Files,
-    PageNumber,
-    PageSize,
-)
 from app.config.templating import templates
 from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
@@ -28,7 +19,16 @@ from app.contrib.forms import create_form
 from app.contrib.urls import redirect_later, safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
-from app.web.teams.forms import EditRoleForm, GeneralSettingsForm, InviteForm
+from app.http.dependencies import (
+    CurrentMembership,
+    CurrentTeam,
+    CurrentUser,
+    DbSession,
+    Files,
+    PageNumber,
+    PageSize,
+)
+from app.http.web.teams.forms import EditRoleForm, GeneralSettingsForm, InviteForm
 
 routes = RouteGroup()
 team_invitation_public_routes = RouteGroup()

@@ -6,18 +6,18 @@ from mailers.pytest_plugin import Mailbox
 from sqlalchemy.orm import Session, joinedload
 from starlette.testclient import TestClient
 
-from app.config.dependencies import Settings
 from app.config.rate_limit import RateLimiter
 from app.contexts.teams.models import TeamMember
 from app.contexts.users.models import User
-from app.web.register.routes import register_rate_limit
+from app.http.dependencies import Settings
+from app.http.web.register.routes import register_rate_limit
 
 
 @pytest.fixture(autouse=True)
 async def _register_rate_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     limiter = RateLimiter(register_rate_limit, "register")
     await limiter.reset()
-    monkeypatch.setattr("app.web.register.routes.register_rate_limit", limits.parse("1000/second"))
+    monkeypatch.setattr("app.http.web.register.routes.register_rate_limit", limits.parse("1000/second"))
 
 
 def test_registration_page_accessible(client: TestClient) -> None:
@@ -196,7 +196,7 @@ def test_registration_without_email_confirmation(
 
 
 def test_register_rate_limit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("app.web.register.routes.register_rate_limit", limits.parse("1/minute"))
+    monkeypatch.setattr("app.http.web.register.routes.register_rate_limit", limits.parse("1/minute"))
 
     response = client.post(
         "/register",

@@ -6,14 +6,14 @@ from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 from starlette_sqlalchemy import DbSessionMiddleware
 
-from app.api.app import api_app
 from app.config import settings
 from app.config.database import new_dbsession
 from app.config.files import file_storage
 from app.config.sentry import configure_sentry
-from app.error_handlers import on_app_error
 from app.exceptions import AppError
-from app.web.app import web_router
+from app.http.api.app import api_app
+from app.http.error_handlers import on_app_error
+from app.http.web.app import web_router
 
 install_error_handler()
 configure_sentry(

@@ -51,6 +51,11 @@ def app() -> Starlette:
     return starlette_app
 
 
+@pytest.fixture(autouse=True)
+def configure_logging(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level("ERROR")
+
+
 @pytest.fixture(autouse=True, scope="session")
 def _switch_timezone() -> typing.Generator[None, None, None]:
     with switch_timezone("UTC"):

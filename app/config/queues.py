@@ -5,6 +5,7 @@ from saq import Queue
 from saq.types import Context
 
 from app.config import settings
+from app.config.events import events
 
 _P = typing.ParamSpec("_P")
 
@@ -20,5 +21,6 @@ queue_settings = {
     "cron_jobs": [],
     "functions": [
         debug_task,
+        events.task,
     ],
 }

@@ -37,6 +37,7 @@ def test_queue_command() -> None:
     async def main() -> None:
         job = await task_queue.enqueue(debug_task.__qualname__)
         await task_queue.disconnect()
+        assert job
         click.echo(f"Task enqueued: {job.id}")
 
     anyio.run(main)

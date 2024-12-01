@@ -18,11 +18,13 @@ from starlette_flash import flash
 
 from app.config import crypto, rate_limit, settings
 from app.config.crypto import make_password
+from app.config.events import events
 from app.config.templating import templates
 from app.contexts.auth.authentication import (
     authenticate_by_email,
     is_active_guard,
 )
+from app.contexts.auth.events import UserAuthenticated
 from app.contexts.auth.exceptions import AuthenticationError, UserNotRegisteredError
 from app.contexts.auth.mails import send_password_changed_mail, send_reset_password_link_mail
 from app.contexts.auth.passwords import CHANGE_PASSWORD_TTL, make_password_reset_link
@@ -73,6 +75,8 @@ async def login_view(request: Request, dbsession: DbSession) -> Response:
                 await login(request, user, settings.secret_key)
                 await limiter.clear(get_client_ip(request))
                 flash(request).success(_("You have been logged in."))
+
+                await events.emit(UserAuthenticated(user_id=user.id))
 
                 redirect_to = resolve_redirect_url(request, request.url_for("dashboard"))
                 return RedirectResponse(redirect_to, status_code=status.HTTP_302_FOUND)

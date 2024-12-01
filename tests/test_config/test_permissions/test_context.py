@@ -76,7 +76,7 @@ class TestAccessContextMiddleware:
             access_context = scope["state"]["access_context"]
             assert access_context.user == team_member.user
             assert access_context.team == team_member.team
-            assert access_context.scopes == {Permission(id="team:read"), Permission(id="team:write")}
+            assert access_context.permissions == {Permission(id="team:read"), Permission(id="team:write")}
             assert access_context.team_member == team_member
             assert access_context.subscription == team_subscription
             assert access_context.subscription_plan == team_subscription.plan

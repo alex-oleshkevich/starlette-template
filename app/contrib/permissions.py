@@ -5,6 +5,10 @@ import types
 import typing
 
 
+class PermissionContext(typing.Protocol):
+    permissions: set[Permission]
+
+
 @dataclasses.dataclass(frozen=True, slots=True)
 class Permission:
     id: str
@@ -22,8 +26,8 @@ class Permission:
     def __hash__(self) -> int:
         return hash(self.id)
 
-    def __call__(self, context: AccessContext, resource: Resource | None = None) -> bool:
-        return self in context.scopes
+    def __call__(self, context: PermissionContext, resource: Resource | None = None) -> bool:
+        return self in context.permissions
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -68,10 +72,6 @@ class Role:
         return str(self.name or self.id)
 
 
-class AccessContext2(typing.Protocol):
-    scopes: set[Permission]
-
-
 class AccessError(Exception):
     """Base class for all access errors."""
 
@@ -100,10 +100,6 @@ def check_rule_or_raise(context: AccessContext, rule: Rule, resource: Resource |
     if not check_rule(context, rule, resource):
         raise AccessDeniedError()
     return None
-
-
-class PermissionContext(typing.Protocol):
-    scopes: set[Permission]
 
 
 def has_permission(permission: Permission) -> Rule:

@@ -19,7 +19,7 @@ class TestPermissionRequired:
             scope=RequestScopeFactory(
                 state={
                     "access_context": AccessContextFactory(
-                        scopes={_permission},
+                        permissions={_permission},
                     )
                 },
             ),
@@ -34,7 +34,7 @@ class TestPermissionRequired:
             scope=RequestScopeFactory(
                 state={
                     "access_context": AccessContextFactory(
-                        scopes={},
+                        permissions={},
                     )
                 },
             ),

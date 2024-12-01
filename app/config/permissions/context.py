@@ -22,8 +22,8 @@ from app.contrib.permissions import (
 class AccessContext:
     user: User
     team: Team
-    scopes: set[Permission]
     team_member: TeamMember
+    permissions: set[Permission]
     subscription: Subscription | None
     subscription_plan: SubscriptionPlan | None
 
@@ -66,7 +66,7 @@ class AccessContextMiddleware:
         request.state.access_context = AccessContext(
             user=user,
             team=team,
-            scopes=scopes,
+            permissions=scopes,
             team_member=team_member,
             subscription=subscription,
             subscription_plan=subscription.plan if subscription else None,

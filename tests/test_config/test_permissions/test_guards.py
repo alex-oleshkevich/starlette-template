@@ -16,8 +16,8 @@ from tests.factories import AccessContextFactory, TeamMemberFactory, TeamRoleFac
 )
 def test_team_access(is_admin: bool, permission_list: list[Permission], expected: bool) -> None:
     access_context = AccessContextFactory(
-        scopes=permission_list,
         user=UserFactory(),
+        permissions=permission_list,
         team_member=TeamMemberFactory(role=TeamRoleFactory(is_admin=is_admin)),
     )
     guard = Guard(access_context)
@@ -35,8 +35,8 @@ def test_team_access(is_admin: bool, permission_list: list[Permission], expected
 )
 def test_team_member_access(is_admin: bool, permission_list: list[Permission], expected: bool) -> None:
     access_context = AccessContextFactory(
-        scopes=permission_list,
         user=UserFactory(),
+        permissions=permission_list,
         team_member=TeamMemberFactory(role=TeamRoleFactory(is_admin=is_admin)),
     )
     guard = Guard(access_context)
@@ -54,8 +54,8 @@ def test_team_member_access(is_admin: bool, permission_list: list[Permission], e
 )
 def test_team_role_access(is_admin: bool, permission_list: list[Permission], expected: bool) -> None:
     access_context = AccessContextFactory(
-        scopes=permission_list,
         user=UserFactory(),
+        permissions=permission_list,
         team_member=TeamMemberFactory(role=TeamRoleFactory(is_admin=is_admin)),
     )
     guard = Guard(access_context)
@@ -73,8 +73,8 @@ def test_team_role_access(is_admin: bool, permission_list: list[Permission], exp
 )
 def test_billing_access(is_admin: bool, permission_list: list[Permission], expected: bool) -> None:
     access_context = AccessContextFactory(
-        scopes=permission_list,
         user=UserFactory(),
+        permissions=permission_list,
         team_member=TeamMemberFactory(role=TeamRoleFactory(is_admin=is_admin)),
     )
     guard = Guard(access_context)

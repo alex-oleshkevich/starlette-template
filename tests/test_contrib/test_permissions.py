@@ -24,17 +24,17 @@ manager_permission = Permission(id="manager", description="manager")
 
 @dataclasses.dataclass
 class AccessContext:
-    scopes: list[Permission]
+    permissions: set[Permission]
 
 
 class TestCheckRule:
     def test_check_rule(self) -> None:
-        context = AccessContext(scopes=[admin_permission])
+        context = AccessContext(permissions={admin_permission})
         assert check_rule(context, has_permission(admin_permission)) is True
         assert check_rule(context, has_permission(manager_permission)) is False
 
     def test_check_rule_or_raise(self) -> None:
-        context = AccessContext(scopes=[admin_permission])
+        context = AccessContext(permissions={admin_permission})
         check_rule_or_raise(context, has_permission(admin_permission))  # no exception
 
         with pytest.raises(AccessDeniedError):
@@ -42,14 +42,14 @@ class TestCheckRule:
 
 
 def test_has_permission() -> None:
-    context = AccessContext(scopes=[admin_permission])
+    context = AccessContext(permissions={admin_permission})
     rule = has_permission(admin_permission)
     assert rule(context) is True
-    assert rule(AccessContext(scopes=[manager_permission])) is False
+    assert rule(AccessContext(permissions={manager_permission})) is False
 
 
 def test_any_of() -> None:
-    context = AccessContext(scopes=[admin_permission])
+    context = AccessContext(permissions={admin_permission})
     rule = any_of(has_permission(admin_permission))
     assert rule(context) is True
 
@@ -61,20 +61,20 @@ def test_any_of() -> None:
 
 
 def test_all_of() -> None:
-    context = AccessContext(scopes=[admin_permission, manager_permission])
+    context = AccessContext(permissions={admin_permission, manager_permission})
     rule = all_of(has_permission(admin_permission), has_permission(manager_permission))
     assert rule(context) is True
 
     rule = all_of(has_permission(manager_permission))
-    assert rule(AccessContext(scopes=[admin_permission])) is False
+    assert rule(AccessContext(permissions={admin_permission})) is False
 
 
 def test_none_of() -> None:
-    context = AccessContext(scopes=[])
+    context = AccessContext(permissions=set())
     rule = none_of(has_permission(admin_permission), has_permission(manager_permission))
     assert rule(context) is True
 
-    context = AccessContext(scopes=[admin_permission])
+    context = AccessContext(permissions={admin_permission})
     rule = none_of(has_permission(admin_permission), has_permission(manager_permission))
     assert rule(context) is False
 
@@ -97,7 +97,7 @@ class TestPermission:
 
     def test_rule_protocol(self) -> None:
         permission = Permission(id="admin", name="Admin permission")
-        assert permission(AccessContext(scopes=[permission])) is True
+        assert permission(AccessContext(permissions={permission})) is True
 
 
 class TestPermissionGroup:

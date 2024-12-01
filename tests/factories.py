@@ -18,6 +18,7 @@ from app.contexts.billing.models import Subscription, SubscriptionPlan
 from app.contexts.teams.models import Team, TeamInvite, TeamMember, TeamRole
 from app.contexts.users.models import User
 from app.contrib.permissions import Permission
+from app.http.asgi import lifespan_handler
 from tests.database import SyncSession
 
 faker = fakerlib.Faker()
@@ -47,6 +48,7 @@ class RequestScopeFactory(factory.DictFactory):
     app: Starlette = factory.LazyFunction(
         lambda: Starlette(
             debug=False,
+            lifespan=lifespan_handler,
             routes=[
                 Route("/", lambda: Response("index"), name="home"),
                 Mount("/static", Response("static"), name="static"),

@@ -14,6 +14,7 @@ from starlette_sqlalchemy import DbSessionMiddleware
 from app.config import settings
 from app.config.database import new_dbsession
 from app.config.files import file_storage
+from app.config.queues import task_queue
 from app.contrib.permissions import AccessDeniedError
 from app.http.api.app import api_app
 from app.http.error_handlers import exception_handler, remap_exception
@@ -35,6 +36,7 @@ async def lifespan_handler(app: Starlette) -> typing.AsyncGenerator[dict[str, ty
     async with anyio.create_task_group() as tg:
         yield {}
         tg.cancel_scope.cancel()
+        await task_queue.disconnect()
 
 
 app = Starlette(

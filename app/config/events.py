@@ -4,7 +4,7 @@ from app.contrib.events import EventDispatcher
 
 events = EventDispatcher(
     task_queue_url=settings.redis_url,
-    sync=False,
+    sync=settings.debug or settings.is_test,
     subscribers={
         UserAuthenticated: [],
     },

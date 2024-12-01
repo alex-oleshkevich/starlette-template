@@ -38,6 +38,7 @@ class Config(BaseSettings):
     is_test: bool = IS_TEST
     debug: bool = False
     secret_key: str = ""
+    log_level: str = "INFO"
 
     # application options
     app_name: str = "Project Template"
@@ -113,6 +114,9 @@ class Config(BaseSettings):
     stripe_secret_key: str = ""
     stripe_public_key: str = ""
     stripe_webhook_secret: str = ""
+
+    task_queue_url: str = redis_url
+    task_queue_concurrency: int = 10
 
 
 class TestConfig(Config):

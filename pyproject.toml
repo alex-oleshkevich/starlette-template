@@ -51,6 +51,7 @@ starlette-auth = "^0.2"
 authlib = "^1.3.2"
 colorhash = "^2.0.0"
 stripe = "^11.2.0"
+saq = "^0.18.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest-asyncio = "^0.24"

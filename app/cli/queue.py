@@ -11,7 +11,7 @@ from redis.exceptions import ConnectionError
 queue_group = click.Group(name="queue", help="Worker queue.")
 
 
-@queue_group.command("start")
+@queue_group.command("worker")
 @click.option("--workers", "-w", default=1, help="Number of workers.")
 @click.option("--web", is_flag=True, help="Start the web server.")
 @click.option("--web-port", default=5001, type=int, help="Port for the web server.")

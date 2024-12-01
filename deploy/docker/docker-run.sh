@@ -2,8 +2,8 @@
 
 set -e
 
-DEFAULT_APP_PACKAGE=$(ls -1 */asgi* | grep asgi.py | sed -e "s/\/asgi.py//" | head -n 1)
-APPLICATION=${ASGI_APPLICATION:="$DEFAULT_APP_PACKAGE.asgi:app"}
+DEFAULT_APP_PACKAGE=$(ls -1 */http/asgi* | grep asgi.py | sed -e "s/\/http\/asgi.py//" | head -n 1)
+APPLICATION=${ASGI_APPLICATION:="$DEFAULT_APP_PACKAGE.http.asgi:app"}
 BIND_PORT=${GUNICORN_PORT:=8000}
 LOG_LEVEL=${GUNICORN_LOG_LEVEL:='info'}
 FORWARDED_ALLOW_IPS=${GUNICORN_FORWARDED_ALLOW_IPS:='*'}

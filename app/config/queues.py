@@ -14,7 +14,7 @@ async def debug_task(context: Context) -> None:
     logging.info("Received debug task.")
 
 
-task_queue = Queue.from_url(settings.task_queue_url)
+task_queue = Queue.from_url(settings.redis_url)
 queue_settings = {
     "queue": task_queue,
     "concurrency": settings.task_queue_concurrency,

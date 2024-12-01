@@ -14,7 +14,7 @@ trap cleanup EXIT ERR
 
 export APP_ENV=unittest
 export POSTGRES_DB=postgres_test
-export TEST_DATABASE_URL=postgresql+psycopg_async://postgres:postgres@postgres:5432/postgres_test
+export TEST_DATABASE_URL=postgresql+psycopg_async://postgres:postgres@postgres:5432/$POSTGRES_DB
 
 mkdir -p build
 docker compose build --pull

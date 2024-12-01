@@ -115,7 +115,6 @@ class Config(BaseSettings):
     stripe_public_key: str = ""
     stripe_webhook_secret: str = ""
 
-    task_queue_url: str = redis_url
     task_queue_concurrency: int = 10
 
 

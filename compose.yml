@@ -15,7 +15,7 @@ x-environment: &env
     TEST_REDIS_URL: redis://redis:6379/1
 
 services:
-    app:
+    app: &app
         build:
             context: .
             args:
@@ -26,10 +26,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
-                required: true
             redis:
                 condition: service_healthy
-                required: true
         volumes:
             - ./scripts:/code/scripts:ro
             - ./tests:/code/tests:ro
@@ -38,6 +36,11 @@ services:
             - ${APP_PORT:-8000}:8000
         environment:
             <<: *env
+
+    worker:
+        <<: *app
+        command: /bin/queue-worker.sh
+        ports: []
 
     postgres:
         image: postgres:17-alpine

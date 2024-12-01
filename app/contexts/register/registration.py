@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette_babel import gettext_lazy as _
 
 from app.config.crypto import amake_password
-from app.contexts.billing.models import Subscription
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 
@@ -18,11 +17,8 @@ async def register_user(
     photo_url: str | None = None,
     language: str = "en",
     timezone: str = "UTC",
-    subscription_status: Subscription.Status = Subscription.Status.TRIALING,
-    subscription_duration: datetime.timedelta = datetime.timedelta(days=30),
     *,
     auto_confirm: bool = False,
-    auto_renew_subscription: bool = True,
 ) -> User:
     user = User(
         first_name=first_name,

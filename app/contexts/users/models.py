@@ -51,8 +51,8 @@ class User(Base, WithTimestamps, BaseUser, HasSessionAuthHash):
 
     @property
     def display_name(self) -> str:
-        if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name}"
+        if self.first_name or self.last_name:
+            return f"{self.first_name or ''} {self.last_name or ''}".strip()
         return self.email
 
     @property

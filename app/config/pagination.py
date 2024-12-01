@@ -10,7 +10,7 @@ def get_page_number(request: Request, param_name: str = "page") -> int:
     """Get page number from request query params."""
     with contextlib.suppress(ValueError):
         return max(int(request.query_params.get(param_name, 1)), 1)
-    return 10
+    return 1
 
 
 def get_page_size(request: Request, param_name: str = "page_size") -> int:

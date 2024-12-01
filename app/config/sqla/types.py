@@ -4,6 +4,7 @@ import typing
 
 import sqlalchemy as sa
 from pydantic import BaseModel
+from sqlalchemy.dialects.postgresql import JSONB
 
 from alembic.autogenerate.api import AutogenContext
 from app.config.sqla.migrations import RendersMigrationType
@@ -27,7 +28,7 @@ _ETT = typing.TypeVar("_ETT")
 
 
 class EmbedType(sa.TypeDecorator[_ETT], RendersMigrationType):
-    impl = sa.JSON
+    impl = JSONB
     cache_ok = True
 
     def __init__(self, embedded_type: type[_ETT]) -> None:

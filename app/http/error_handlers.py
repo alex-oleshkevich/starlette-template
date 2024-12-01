@@ -1,6 +1,8 @@
 import logging
+import typing
 
 from starlette import status
+from starlette.datastructures import MutableHeaders
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
 from starlette.responses import Response
@@ -14,6 +16,16 @@ from app.http.responses import JSONErrorResponse
 logger = logging.getLogger(__name__)
 
 
+def remap_exception(new_exception: type[Exception]) -> typing.Callable[[Request, Exception], Response]:
+    """Remap one exception to another.
+    Used to integrate with third-party libraries that raise their own exceptions."""
+
+    def handler(request: Request, _: Exception) -> Response:
+        return exception_handler(request, new_exception())
+
+    return handler
+
+
 def exception_handler(request: Request, exc: Exception) -> Response:
     """Default exception handler for HTTP exceptions.
 
@@ -24,9 +36,9 @@ def exception_handler(request: Request, exc: Exception) -> Response:
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     error_code = error_codes.SERVER_ERROR
     message = str(error_code)
-    headers = {}
-    field_errors = {}
-    non_field_errors = []
+    headers: typing.Mapping[str, str] = {}
+    field_errors: dict[str, list[str]] = {}
+    non_field_errors: list[str] = []
     common_error_code_mapping = {
         400: error_codes.BAD_REQUEST,
         401: error_codes.AUTH_UNAUTHENTICATED,
@@ -52,17 +64,18 @@ def exception_handler(request: Request, exc: Exception) -> Response:
         non_field_errors = exc.non_field_errors
 
     # expose error code in headers for easier debugging
-    headers.setdefault("x-error-code", error_code.code)
+    response_headers = MutableHeaders(headers)
+    response_headers.setdefault("x-error-code", error_code.code)
 
     if htmx.is_htmx_request(request):
-        return htmx.response(status_code=status_code, headers=headers).error_toast(message)
+        return htmx.response(status_code=status_code, headers=response_headers).error_toast(message)
 
     if "application/json" in request.headers.get("accept", ""):
         return JSONErrorResponse(
             message,
             status_code=status_code,
             error_code=error_code,
-            headers=headers,
+            headers=response_headers,
             field_errors=field_errors,
             non_field_errors=non_field_errors,
         )
@@ -72,5 +85,5 @@ def exception_handler(request: Request, exc: Exception) -> Response:
         "web/service/http_error.html",
         {"status_code": status_code, "error_message": message},
         status_code=status_code,
-        headers=headers,
+        headers=response_headers,
     )

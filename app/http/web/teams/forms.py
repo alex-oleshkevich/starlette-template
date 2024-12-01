@@ -37,6 +37,7 @@ class InviteForm(wtforms.Form):
 
 class EditRoleForm(wtforms.Form):
     name = wtforms.StringField(_("Name"), [wtforms.validators.data_required(), wtforms.validators.length(max=255)])
+    permissions = wtforms.SelectMultipleField(_("Permissions"), [wtforms.validators.optional()])
     is_admin = wtforms.BooleanField(
         _("Team administrator"),
         description=_("Members of this team would have all permissions."),

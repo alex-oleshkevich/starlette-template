@@ -5,7 +5,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import error_codes
 from app.error_codes import ErrorCode
-from app.http.error_handlers import exception_handler
+from app.http.error_handlers import exception_handler, remap_exception
 from app.http.exceptions import (
     AuthenticationError,
     BadRequestError,
@@ -136,3 +136,11 @@ def test_known_http_exceptions(exception: type[Exception], status_code: int, err
     response = exception_handler(request, exception())
     assert response.status_code == status_code
     assert response.headers.get("x-error-code") == error_code.code
+
+
+def test_remap_exception() -> None:
+    next_handler = remap_exception(BadRequestError)
+    request = RequestFactory(scope=RequestScopeFactory())
+    response = next_handler(request, Exception())
+    assert response.status_code == 400
+    assert response.headers.get("x-error-code") == error_codes.BAD_REQUEST

@@ -18,7 +18,7 @@ classifiers = [
 python = "^3.12"
 async-storages = { extras = ["s3"], version = "^0.7" }
 fastapi = "^0.115"
-mailers = { version = "^3.0", extras = ["smtp"] }
+mailers = {extras = ["css-inline", "smtp"], version = "^3.2.0"}
 itsdangerous = "^2.1"
 starception = "^1.2"
 uvicorn = { extras = ["standard"], version = "^0.32" }
@@ -57,7 +57,7 @@ pytest-asyncio = "^0.24"
 pytest = "^8.0"
 pytest-sugar = "^1.0"
 ruff = "^0.2"
-mypy = "^1.12"
+mypy = "^1.13"
 types-passlib = "^1.7"
 factory-boy = "^3.3"
 pytest-cov = "^5.0"
@@ -91,45 +91,8 @@ exclude = ['var', '.venv', '.git']
 
 [tool.ruff.lint]
 fixable = ["ALL"]
-select = ['ALL']
+select = ['E', 'F']
 exclude = ['alembic/*']
-ignore = [
-    'D',
-    'SIM117',
-    'C408',
-    'PLR2004',
-    'ARG001',
-    'ANN101',
-    'TCH001',
-    'S101', # Use of `assert` detected
-    'RUF009', # Do not perform function call `env.get` in dataclass defaults
-    'TCH',
-    'TRY003', # Avoid specifying long messages outside the exception class
-    'EM101', # Exception must not use a string literal, assign to variable first
-    'PLR0913', # Too many arguments in function definition (7 > 5)
-    'PTH', # Too many arguments in function definition (7 > 5)`ISC001`.
-    'ANN401',
-    'ANN102',
-    'TD',
-    'FIX001',
-    'COM812',
-    'ARG002',
-    'B008',
-    'SIM102',
-    'ISC001',
-    'ERA001',
-    'S105',
-    'S106',
-    'EM102',
-    'B904',
-    'ARG005', # Unused lambda argument
-    'G004', # Logging statement uses f-string
-    'PT018', # assertion should be broken down intso multiple parts
-    'UP031', # Use format specifiers instead of percent formatas
-    'TRY301', # Abstract `raise` to an inner function
-    'RSE102',
-    'PT',
-]
 
 [tool.pytest.ini_options]
 asyncio_mode = 'auto'

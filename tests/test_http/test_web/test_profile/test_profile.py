@@ -1,10 +1,13 @@
+import sqlalchemy as sa
 from mailers.pytest_plugin import Mailbox
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from app.config.crypto import verify_password
+from app.contexts.teams.models import TeamMember
 from app.contexts.users.models import User
-from app.contrib.testing import as_htmx_response
+from app.contrib.testing import TestAuthClient, as_htmx_response
+from tests.factories import TeamMemberFactory, UserFactory
 
 
 def test_profile_accessible(auth_client: TestClient) -> None:
@@ -86,3 +89,24 @@ def test_delete_profile(auth_client: TestClient, user: User, dbsession_sync: Ses
     assert auth_client.get("/app/profile").status_code == 302
     assert len(mailbox)
     assert mailbox[0]["subject"] == "Your account has been deleted"
+
+
+async def test_leave_team(auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session) -> None:
+    """Any user can leave the team on their own."""
+    user = UserFactory()
+    team_member = TeamMemberFactory(team=team_member.team, user=user)
+    await auth_client.force_user(user)
+    response = auth_client.post("/app/profile/leave")
+    assert response.status_code == 302
+    assert response.headers["location"] == "http://testserver/app/"
+    assert not dbsession_sync.scalars(
+        sa.select(TeamMember).where(TeamMember.id == team_member.id, TeamMember.suspended_at.is_(None))
+    ).one_or_none()
+
+
+def test_leave_team_owner(auth_client: TestAuthClient, team_member: TeamMember, dbsession_sync: Session) -> None:
+    """Team owners cannot leave the team."""
+    assert team_member.user == team_member.team.owner
+    response = auth_client.post("/app/profile/leave")
+    assert response.status_code == 403
+    assert dbsession_sync.scalars(sa.select(TeamMember).where(TeamMember.id == team_member.id)).one_or_none()

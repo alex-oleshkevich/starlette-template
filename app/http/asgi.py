@@ -11,8 +11,10 @@ from app.config import settings
 from app.config.database import new_dbsession
 from app.config.files import file_storage
 from app.config.sentry import configure_sentry
+from app.contrib.permissions import AccessDeniedError
 from app.http.api.app import api_app
-from app.http.error_handlers import exception_handler
+from app.http.error_handlers import exception_handler, remap_exception
+from app.http.exceptions import PermissionDeniedError
 from app.http.web.app import web_router
 
 install_error_handler()
@@ -38,5 +40,6 @@ app = Starlette(
     middleware=global_middleware,
     exception_handlers={
         HTTPException: exception_handler,
+        AccessDeniedError: remap_exception(PermissionDeniedError),
     },
 )

@@ -1,3 +1,5 @@
+import typing
+
 from pydantic import BaseModel
 from starlette.background import BackgroundTask
 from starlette.responses import JSONResponse
@@ -24,7 +26,7 @@ class JSONErrorResponse(JSONResponse):
         field_errors: dict[str, list[str]] | None = None,
         non_field_errors: list[str] | None = None,
         error_code: ErrorCode = SERVER_ERROR,
-        headers: dict[str, str] | None = None,
+        headers: typing.Mapping[str, str] | None = None,
         background: BackgroundTask | None = None,
     ) -> None:
         message_code = error_code.code

@@ -11,6 +11,7 @@
         <tr>
             <th>{{ _('Name') }}</th>
             <th>{{ _('Members') }}</th>
+            <th>{{ _('Permissions') }}</th>
             <th></th>
         </tr>
         </thead>
@@ -20,6 +21,28 @@
                 <td>{{ role }}</td>
                 <td>
                     {{ role.members_count }}
+                </td>
+                <td>
+                    {% set total = role.permissions|count %}
+                    {% set display_subset = role.permissions[:5] %}
+                    {% set remaining = role.permissions[5:] %}
+                    {% for permission in display_subset -%}
+                        <span class="badge">{{- permission -}}</span>{{- ", " if not loop.last else "" -}}
+                    {%- endfor -%}
+                    {%- if remaining -%}
+                        <o-popover placement="bottom-start" target="#role-{{ role.id }}-permissions">
+                            <span class="link cursor-pointer">
+                                {{ _("and {remaining} more").format(remaining=remaining|count) }}
+                            </span>
+                        </o-popover>
+                        <div class="dropdown" id="role-{{ role.id }}-permissions">
+                            <div class="list-menu w-full max-w-xl p-3 gap-1 flex flex-wrap">
+                                {% for permission in remaining %}
+                                    <span class="badge">{{ permission }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                 </td>
                 <td>
                     <div class="flex items-center justify-end gap-2">
@@ -45,7 +68,8 @@
                                 >
                                     {{ _('Edit') }}
                                 </button>
-                                <button type="button" {% if not role.deletable %}disabled title="{{ _('Role has members.r') }}" {% endif %}
+                                <button type="button" {% if not role.deletable %}disabled
+                                        title="{{ _('Role has members.r') }}" {% endif %}
                                         hx-confirm="{{ _('Are you sure you want to delete this role?') }}"
                                         hx-post="{{ url('teams.roles.delete', role_id=role.id) }}">
                                     {{ _('Delete') }}

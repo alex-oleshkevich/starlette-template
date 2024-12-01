@@ -11,6 +11,13 @@ class ErrorCode:
     def __str__(self) -> str:
         return str(self.description)
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            return other == self.code
+        if not isinstance(other, ErrorCode):
+            return NotImplemented
+        return self.code == other.code
+
 
 # Please keep the error codes sorted alphabetically
 AUTH_UNAUTHENTICATED = ErrorCode("auth.unauthenticated", _("Unauthenticated."))

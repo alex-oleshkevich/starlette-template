@@ -39,4 +39,4 @@ async def test_send_templated_mail(mailbox: Mailbox) -> None:
     assert mailbox[0]["to"] == "me@me.com"
     assert mailbox[0]["subject"] == "Test"
     assert mailbox[0].get_payload(0).get_content() == "Test body\n"  # type: ignore[union-attr]
-    assert mailbox[0].get_payload(1).get_content() == "<html><body><b>Test body</b>\n</body></html>"  # type: ignore[union-attr]
+    assert mailbox[0].get_payload(1).get_content() == "<html><head></head><body><b>Test body</b>\n</body></html>"  # type: ignore[union-attr]

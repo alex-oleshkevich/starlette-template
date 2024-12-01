@@ -1,5 +1,6 @@
 import limits
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.attributes import flag_modified
 from starlette import status
 from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
@@ -9,6 +10,8 @@ from starlette_dispatch import FromPath, RouteGroup
 from starlette_flash import flash
 
 from app.config import rate_limit
+from app.config.permissions import guards, permissions
+from app.config.permissions.decorators import permission_required
 from app.config.templating import templates
 from app.contexts.teams.exceptions import AlreadyMemberError
 from app.contexts.teams.mails import send_team_invitation_email, send_team_member_joined_email
@@ -16,6 +19,7 @@ from app.contexts.teams.models import InvitationToken, TeamInvite, TeamRole
 from app.contexts.teams.repo import TeamRepo
 from app.contrib import forms, htmx
 from app.contrib.forms import create_form
+from app.contrib.permissions import get_defined_permissions
 from app.contrib.urls import redirect_later, safe_referer
 from app.contrib.utils import get_client_ip
 from app.exceptions import RateLimitedError
@@ -57,6 +61,7 @@ async def select_team_view(request: Request) -> Response:
 
 
 @routes.get_or_post("/teams/settings", name="teams.settings")
+@permission_required(guards.TEAM_ACCESS)
 async def settings_view(request: Request, dbsession: DbSession, team: CurrentTeam, files: Files) -> Response:
     form = await create_form(request, GeneralSettingsForm, obj=team)
     if await forms.validate_on_submit(request, form):
@@ -81,8 +86,13 @@ async def settings_view(request: Request, dbsession: DbSession, team: CurrentTea
 
 
 @routes.get_or_post("/teams/members", name="teams.members")
+@permission_required(guards.TEAM_MEMBER_ACCESS)
 async def members_view(
-    request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
+    request: Request,
+    dbsession: DbSession,
+    team: CurrentTeam,
+    page_number: PageNumber,
+    page_size: PageSize,
 ) -> Response:
     repo = TeamRepo(dbsession)
     members = await repo.get_team_members_paginated(team.id, page=page_number, page_size=page_size)
@@ -93,6 +103,7 @@ async def members_view(
 
 
 @routes.get("/teams/invites", name="teams.invites")
+@permission_required(guards.TEAM_MEMBER_ACCESS)
 async def invites_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
 ) -> Response:
@@ -105,6 +116,7 @@ async def invites_view(
 
 
 @routes.get_or_post("/teams/members/invite", name="teams.members.invite")
+@permission_required(guards.TEAM_MEMBER_ACCESS)
 async def send_invite_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
     repo = TeamRepo(dbsession)
     roles = await repo.get_roles(team_member.team.id)
@@ -151,7 +163,10 @@ async def send_invite_view(request: Request, dbsession: DbSession, team_member: 
 
 
 @routes.post("/teams/members/toggle-status/{member_id:int}", name="teams.members.toggle_status")
-async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id: FromPath[int]) -> Response:
+@permission_required(guards.TEAM_MEMBER_ACCESS)
+async def toggle_status_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, member_id: FromPath[int]
+) -> Response:
     repo = TeamRepo(dbsession)
     member = await repo.get_team_member_by_id(team.id, member_id)
     if not member:
@@ -172,19 +187,11 @@ async def toggle_status_view(dbsession: DbSession, team: CurrentTeam, member_id:
     return htmx.response().success_toast(message).trigger("refresh")
 
 
-@routes.post("/teams/members/leave", name="teams.members.leave")
-async def leave_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
-    # suspend/resume is not applicable to team owner
-    if team_member.team.owner == team_member.user:
-        return htmx.response(status.HTTP_400_BAD_REQUEST).error_toast(_("Team owner cannot be suspended."))
-
-    team_member.suspend()
-    await dbsession.commit()
-    return RedirectResponse(request.url_for("dashboard"), status_code=status.HTTP_302_FOUND)
-
-
 @routes.post("/teams/invites/cancel/{invite_id:int}", name="teams.invites.cancel")
-async def cancel_invitation_view(dbsession: DbSession, team: CurrentTeam, invite_id: FromPath[int]) -> Response:
+@permission_required(guards.TEAM_MEMBER_ACCESS)
+async def cancel_invitation_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, invite_id: FromPath[int]
+) -> Response:
     repo = TeamRepo(dbsession)
     invitation = await repo.get_invitation(team.id, invite_id)
     if not invitation:
@@ -196,6 +203,7 @@ async def cancel_invitation_view(dbsession: DbSession, team: CurrentTeam, invite
 
 
 @routes.post("/teams/invites/resend/{invite_id:int}", name="teams.invites.resend")
+@permission_required(guards.TEAM_MEMBER_ACCESS)
 async def resend_invitation_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, invite_id: FromPath[int]
 ) -> Response:
@@ -232,6 +240,7 @@ async def resend_invitation_view(
 
 
 @routes.get_or_post("/teams/roles", name="teams.roles")
+@permission_required(guards.TEAM_ROLE_ACCESS)
 async def roles_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, page_number: PageNumber, page_size: PageSize
 ) -> Response:
@@ -245,6 +254,7 @@ async def roles_view(
 
 @routes.get_or_post("/teams/roles/new", name="teams.roles.create")
 @routes.get_or_post("/teams/roles/edit/{role_id:int}", name="teams.roles.edit")
+@permission_required(guards.TEAM_ROLE_ACCESS)
 async def edit_role_view(
     request: Request, dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int] | None
 ) -> Response:
@@ -258,9 +268,12 @@ async def edit_role_view(
 
     instance = instance or TeamRole(team=team)
     form = await create_form(request, EditRoleForm, obj=instance)
+    defined_permissions = get_defined_permissions(permissions)
+    form.permissions.choices = [(p.id, p.name) for p in defined_permissions]
     if await forms.validate_on_submit(request, form):
         form.populate_obj(instance)
         dbsession.add(instance)
+        flag_modified(instance, "permissions")
         await dbsession.commit()
         return htmx.response().success_toast(_("Role has been saved.")).close_modal().trigger("refresh")
 
@@ -268,7 +281,10 @@ async def edit_role_view(
 
 
 @routes.post("/teams/roles/delete/{role_id:int}", name="teams.roles.delete")
-async def delete_role_view(dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int]) -> Response:
+@permission_required(guards.TEAM_ROLE_ACCESS)
+async def delete_role_view(
+    request: Request, dbsession: DbSession, team: CurrentTeam, role_id: FromPath[int]
+) -> Response:
     repo = TeamRepo(dbsession)
     instance = await repo.get_role(team.id, role_id, load_members=True)
     if not instance:
@@ -289,12 +305,16 @@ async def accept_invite_view(
     user: CurrentUser,
     token: FromPath[str],
 ) -> Response:
-    if not user.is_authenticated:
-        redirect_later(request, request.url)
-        return RedirectResponse(request.url_for("register"), status_code=status.HTTP_302_FOUND)
-
     repo = TeamRepo(dbsession)
     invitation = await repo.get_invitation_by_token(token)
+    if not user.is_authenticated:
+        if invitation:
+            request.session["invited_user_email"] = invitation.email
+
+        redirect_later(request, request.url)
+        flash(request).success(_("Please log in or register to accept the invitation."))
+        return RedirectResponse(request.url_for("register"), status_code=status.HTTP_302_FOUND)
+
     if not invitation:
         return templates.TemplateResponse(
             request,

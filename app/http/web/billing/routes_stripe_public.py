@@ -27,14 +27,27 @@ async def webhook_handler_view(request: Request, dbsession: DbSession) -> Respon
         event = stripe.Event.construct_from(data, stripe.api_key)
         match event.type:
             case "checkout.session.completed":
+                if not isinstance(event.data.object, stripe.checkout.Session):
+                    logger.error("stripe webhook error: event data is not a stripe.Checkout.Session")
+                    return JSONErrorResponse(status_code=400)
+
                 await create_stripe_subscription(dbsession, event.data.object)
                 await dbsession.commit()
                 logger.info("stripe subscription has been created")
+
             case "customer.subscription.updated":
+                if not isinstance(event.data.object, stripe.Subscription):
+                    logger.error("stripe webhook error: event data is not a stripe.Subscription")
+                    return JSONErrorResponse(status_code=400)
+
                 await update_stripe_subscription(dbsession, event.data.object)
                 logger.info("stripe subscription has been upgraded")
                 await dbsession.commit()
             case "customer.subscription.deleted":
+                if not isinstance(event.data.object, stripe.Subscription):
+                    logger.error("stripe webhook error: event data is not a stripe.Subscription")
+                    return JSONErrorResponse(status_code=400)
+
                 await cancel_stripe_subscription(dbsession, event.data.object)
                 await dbsession.commit()
                 logger.info("stripe subscription has been deleted")

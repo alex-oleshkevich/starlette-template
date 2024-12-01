@@ -1,7 +1,6 @@
 import typing
 
 import pytest
-import sqlalchemy as sa
 from mailers import InMemoryTransport
 from mailers.pytest_plugin import Mailbox
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,8 +14,9 @@ from starsessions import InMemoryStore, SessionStore
 from app.config import mailers
 from app.config import settings as app_settings
 from app.config.database import new_dbsession
+from app.config.permissions.context import AccessContext, Guard
 from app.config.settings import Config
-from app.contexts.billing.models import SubscriptionPlan
+from app.contexts.billing.models import Subscription, SubscriptionPlan
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
 from app.contrib.storage import StorageType
@@ -25,8 +25,10 @@ from app.http.asgi import app as starlette_app
 from app.http.web.app import session_backend as app_session_backend
 from tests import database
 from tests.factories import (
+    AccessContextFactory,
     RequestFactory,
     RequestScopeFactory,
+    SubscriptionFactory,
     SubscriptionPlanFactory,
     TeamFactory,
     TeamMemberFactory,
@@ -85,14 +87,8 @@ def user() -> User:
 
 
 @pytest.fixture()
-def subscription_plan(dbsession_sync: Session) -> typing.Generator[SubscriptionPlan, None, None]:
-    stmt = sa.select(SubscriptionPlan)
-    plan = dbsession_sync.scalars(stmt).one_or_none()
-    if not plan:
-        plan = SubscriptionPlanFactory(price=0)
-        dbsession_sync.add(plan)
-        dbsession_sync.commit()
-    yield plan
+def subscription_plan(dbsession_sync: Session) -> SubscriptionPlan:
+    return SubscriptionPlanFactory()
 
 
 @pytest.fixture()
@@ -116,9 +112,31 @@ def team_member(user: User, team: Team, team_admin_role: TeamRole) -> TeamMember
 
 
 @pytest.fixture()
+def team_subscription(subscription_plan: SubscriptionPlan, team: Team) -> Subscription:
+    return SubscriptionFactory(
+        plan=subscription_plan,
+        team=team,
+        status=Subscription.Status.ACTIVE,
+    )
+
+
+@pytest.fixture()
 def user_session() -> SessionStore:
     assert isinstance(app_session_backend, InMemoryStore)
     return app_session_backend
+
+
+@pytest.fixture()
+def access_context(team_member: TeamMember, team_subscription: Subscription) -> AccessContext:
+    return AccessContextFactory(
+        team_member=team_member,
+        subscription=team_subscription,
+    )
+
+
+@pytest.fixture
+def guard(access_context: AccessContext) -> Guard:
+    return Guard(access_context)
 
 
 @pytest.fixture

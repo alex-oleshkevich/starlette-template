@@ -5,15 +5,25 @@
         <a href="{{ url('teams.settings') }}" class="{{ css_classes(active=pathname_matches('teams.settings')) }}">
             {{ _('General') }}
         </a>
-        <a href="{{ url('teams.members') }}" class="{{ css_classes(active=pathname_matches('teams.members')) }}">
-            {{ _('Members') }}
-        </a>
-        <a href="{{ url('teams.invites') }}" class="{{ css_classes(active=pathname_matches('teams.invites')) }}">
-            {{ _('Invitations') }}
-        </a>
-        <a href="{{ url('teams.roles') }}" class="{{ css_classes(active=pathname_matches('teams.roles')) }}">
-            {{ _('Roles') }}
-        </a>
+
+        {% if is_granted(permissions.TEAM_MEMBER_ACCESS) %}
+            <a href="{{ url('teams.members') }}" class="{{ css_classes(active=pathname_matches('teams.members')) }}">
+                {{ _('Members') }}
+            </a>
+        {% endif %}
+
+        {% if is_granted(permissions.TEAM_MEMBER_ACCESS) %}
+            <a href="{{ url('teams.invites') }}" class="{{ css_classes(active=pathname_matches('teams.invites')) }}">
+                {{ _('Invitations') }}
+            </a>
+        {% endif %}
+
+        {% if is_granted(permissions.TEAM_ROLE_ACCESS) %}
+            <a href="{{ url('teams.roles') }}" class="{{ css_classes(active=pathname_matches('teams.roles')) }}">
+                {{ _('Roles') }}
+            </a>
+        {% endif %}
+
     </nav>
     {% block page %}{% endblock %}
 {% endblock %}

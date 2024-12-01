@@ -139,6 +139,13 @@
         @apply dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900;
     }
 
+    .btn-warning {
+        @apply text-white bg-yellow-400 hover:bg-yellow-800;
+        @apply hover:text-white;
+        @apply focus:ring-yellow-300;
+        @apply dark:bg-yellow-600 dark:hover:bg-yellow-700 dark:focus:ring-yellow-900;
+    }
+
     .btn-block {
         @apply w-full;
     }
@@ -154,7 +161,6 @@
 
     input[type="email"],
     input[type="text"],
-    input[type="select"],
     input[type="url"],
     input[type="password"],
     input[type="date"],
@@ -164,6 +170,7 @@
     input[type="time"],
     input[type="tel"],
     select,
+    [multiple],
     textarea,
     .form-control {
         @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full py-2 px-4 leading-6;

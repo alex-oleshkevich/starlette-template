@@ -68,8 +68,8 @@ class TestAuthClient(TestClient):
         self.cookies.update({self._session_cookie: session_id})
         await self._session_store.write(
             session_id=session_id,
-            ttl=settings.session_lifetime,
-            lifetime=settings.session_lifetime,
+            ttl=int(settings.session_lifetime.total_seconds()),
+            lifetime=int(settings.session_lifetime.total_seconds()),
             data=json.dumps(
                 {
                     SESSION_KEY: user.id,
@@ -83,3 +83,6 @@ class TestAuthClient(TestClient):
 
     def clear_team(self) -> None:
         self.cookies.pop(self._team_cookie, None)
+
+    def __enter__(self) -> typing.Self:
+        return typing.cast(typing.Self, super().__enter__())

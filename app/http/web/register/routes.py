@@ -1,4 +1,3 @@
-import datetime
 import time
 
 import limits
@@ -15,7 +14,6 @@ from starlette_flash import flash
 from app.config import rate_limit
 from app.config.templating import templates
 from app.contexts.auth.authentication import login_required
-from app.contexts.billing.models import Subscription
 from app.contexts.register.exceptions import InvalidVerificationTokenError, RegisterError
 from app.contexts.register.mails import send_email_verification_link
 from app.contexts.register.registration import register_user
@@ -36,7 +34,9 @@ register_rate_limit = limits.parse("3/minute")
 @routes.get_or_post("/register", name="register")
 async def register_view(request: Request, dbsession: DbSession, settings: Settings) -> Response:
     status_code = status.HTTP_200_OK
-    form = await forms.create_form(request, RegisterForm)
+    print(request.session.get("invited_user_email", None))
+    invited_user_email = request.session.get("invited_user_email", None)
+    form = await forms.create_form(request, RegisterForm, data={"email": invited_user_email})
     headers = {}
     limiter = rate_limit.RateLimiter(register_rate_limit, "register")
     match await validate_on_submit(request, form):
@@ -51,9 +51,6 @@ async def register_view(request: Request, dbsession: DbSession, settings: Settin
                     plain_password=form.password.data,  # type: ignore[arg-type]
                     language=get_locale().language,
                     timezone=str(get_timezone()),
-                    auto_renew_subscription=True,
-                    subscription_status=Subscription.Status.TRIALING,
-                    subscription_duration=datetime.timedelta(days=30),
                     auto_confirm=not settings.register_require_email_confirmation,
                 )
                 dbsession.add(user)

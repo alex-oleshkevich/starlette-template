@@ -247,6 +247,10 @@ class TestInvitations:
         assert response.status_code == 302
         assert response.headers["location"] == "http://testserver/register"
 
+        response = client.get(response.headers["location"])
+        assert response.status_code == 200
+        assert invitation.email in response.text
+
         # perform registration
         response = client.post(
             "/register",

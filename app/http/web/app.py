@@ -10,6 +10,7 @@ from starsessions.stores.redis import RedisStore
 
 from app.config import redis, settings
 from app.config.environment import Environment
+from app.config.permissions.context import AccessContextMiddleware
 from app.contexts.auth.authentication import db_user_loader
 from app.contexts.billing.middleware import SubscriptionMiddleware
 from app.contexts.teams.middleware import RequireTeamMiddleware, TeamMiddleware
@@ -60,6 +61,7 @@ web_router = Router(
                     Middleware(TeamMiddleware, cookie_name=settings.team_cookie, query_param="team_id"),
                     Middleware(RequireTeamMiddleware, redirect_path_name="teams.select"),
                     Middleware(SubscriptionMiddleware),
+                    Middleware(AccessContextMiddleware),
                 ],
                 routes=RouteGroup(
                     children=[

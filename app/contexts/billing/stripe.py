@@ -96,12 +96,18 @@ async def create_stripe_subscription(dbsession: AsyncSession, stripe_session: st
         Automatic plan provisioning can lead to unexpected behavior depending on price and billing strategy.
     """
     repo = SubscriptionRepo(dbsession)
+    if not isinstance(stripe_session.subscription, str):
+        raise BillingError(_("Stripe session does not have a subscription."))
+
+    if not stripe_session.client_reference_id:
+        raise BillingError(_("Client reference id is missing."))
+
     stripe_subscription = await stripe.Subscription.retrieve_async(stripe_session.subscription)
     subscription = await repo.get_subscription_by_remote_id(stripe_subscription.id)
     if subscription is not None:
         raise DuplicateSubscriptionError()
 
-    team_id = int(stripe_session.client_reference_id)
+    team_id = int(stripe_session.client_reference_id or 0)
     team_repo = TeamRepo(dbsession)
     team = await team_repo.get(team_id)
     try:

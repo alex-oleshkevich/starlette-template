@@ -5,6 +5,7 @@ import uuid
 
 import sqlalchemy as sa
 from colorhash import ColorHash
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, query_expression, relationship
 from starlette.datastructures import URL
 from starlette.requests import Request
@@ -46,9 +47,8 @@ class TeamRole(Base, WithTimestamps):
 
     Extension strategies:
     1. add a `permissions` relationship to a list of permissions.
-    2. add one or more boolean columns for each permission.
+    2. add columns for each permission.
     3. add a column "permissions" with a JSONB type to store a list of permissions.
-    4. add a column "permissions" with the python class name that implements the permissions.
 
     Each strategy is valid and has its own trade-offs. Choose the one that fits your needs.
     The permission framework can work with any of these strategies."""
@@ -58,7 +58,7 @@ class TeamRole(Base, WithTimestamps):
     id: Mapped[IntPk]
     name: Mapped[str] = mapped_column()
     team_id: Mapped[int] = mapped_column(sa.ForeignKey("teams.id"))
-
+    permissions: Mapped[list[str]] = mapped_column(JSONB, default=list, doc="List of permissions.", server_default="[]")
     is_admin: Mapped[bool] = mapped_column(
         sa.Boolean(), default=False, server_default=sa.false(), doc="Admins can manage the team."
     )

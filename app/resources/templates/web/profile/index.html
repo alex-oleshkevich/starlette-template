@@ -14,6 +14,31 @@
 
         <hr>
 
+        {% if current_team.owner != current_user %}
+            <section>
+                <header>
+                    <h2>{{ _('Leave team') }}</h2>
+                </header>
+                <main class="mb-3 text-sm text-muted">
+                    {% trans -%}
+                        You will be removed from the team and lose access to all team resources.
+                        In order to join the team again, you will need to be re-invited.
+                    {%- endtrans %}
+                    {{ _('Once you delete your account, there is no going back. Please be certain.') }}
+                </main>
+                <footer>
+                    <button class="btn btn-warning"
+                            hx-confirm="{{ _('Are you sure you want to leave this team?') }}"
+                            hx-post="{{ url('profile.leave_team') }}"
+                    >
+                        {{ _('Leave "{team}"').format(team=current_team) }}
+                    </button>
+                </footer>
+            </section>
+        {% endif %}
+
+        <hr>
+
         <section>
             <header>
                 <h2>{{ _('Delete account') }}</h2>

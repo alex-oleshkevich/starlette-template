@@ -9,6 +9,8 @@ from app.config.cache import cache
 from app.config.files import file_storage
 from app.config.mailers import mailer
 from app.config.pagination import get_page_number, get_page_size
+from app.config.permissions.context import AccessContext as _AccessContext
+from app.config.permissions.context import Guard as _Guard
 from app.config.redis import redis
 from app.config.settings import Config, settings
 from app.contexts.billing.exceptions import SubscriptionRequiredError
@@ -39,3 +41,5 @@ CurrentSubscription = typing.Annotated[Subscription | None, lambda r: r.state.su
 RequireSubscription = typing.Annotated[Subscription, _get_current_subscription_or_raise]
 PageNumber = typing.Annotated[int, lambda r: get_page_number(r)]
 PageSize = typing.Annotated[int, lambda r: get_page_size(r)]
+AccessContext = typing.Annotated[_AccessContext, lambda r: r.state.access_context]
+Guard = typing.Annotated[_Guard, lambda r: _Guard(r.state.access_context)]

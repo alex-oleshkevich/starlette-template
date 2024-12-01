@@ -159,10 +159,6 @@ class StripePlanFactory(factory.DictFactory):
     trial_period_days: int | None = None
     usage_type: typing.Literal["licensed"] = "licensed"
 
-    @classmethod
-    def make(cls, **kwargs: typing.Any) -> stripe.Plan:
-        return stripe.Plan.construct_from(cls(**kwargs), "")
-
 
 class StripePriceFactory(factory.DictFactory):
     id: str = factory.LazyFunction(lambda: f"price_{int(time.time())}")

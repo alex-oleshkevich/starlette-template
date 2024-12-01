@@ -4,6 +4,19 @@ from app.error_codes import ErrorCode
 from app.exceptions import AppError
 
 
+class TestErrorCode:
+    def test_str(self) -> None:
+        code = ErrorCode("test", "Test error")
+        assert str(code) == "Test error"
+
+    def test_eq(self) -> None:
+        code = ErrorCode("test", "Test error")
+        assert code == "test"
+        assert code == ErrorCode("test", "Test error")
+        assert code != "unknown"
+        assert code != ErrorCode("unknown", "Unknown error")
+
+
 def test_apperror() -> None:
     with pytest.raises(AppError, match=""):
         raise AppError

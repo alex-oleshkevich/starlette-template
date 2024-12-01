@@ -13,9 +13,11 @@ from starlette.responses import Response
 from starlette.routing import Mount, Route
 
 from app.config.crypto import make_password
+from app.config.permissions.context import AccessContext
 from app.contexts.billing.models import Subscription, SubscriptionPlan
 from app.contexts.teams.models import Team, TeamInvite, TeamMember, TeamRole
 from app.contexts.users.models import User
+from app.contrib.permissions import Permission
 from tests.database import SyncSession
 
 faker = fakerlib.Faker()
@@ -141,3 +143,15 @@ class SubscriptionFactory(BaseModelFactory):
 
     class Meta:
         model = Subscription
+
+
+class AccessContextFactory(factory.Factory):
+    team_member: TeamMember = factory.SubFactory(TeamMemberFactory)
+    user: User = factory.SelfAttribute("team_member.user")
+    team: Team = factory.SelfAttribute("team_member.team")
+    scopes: list[Permission] = factory.LazyFunction(lambda: [Permission("read")])
+    subscription: Subscription = factory.SubFactory(SubscriptionFactory)
+    subscription_plan: SubscriptionPlan = factory.SelfAttribute("subscription.plan")
+
+    class Meta:
+        model = AccessContext

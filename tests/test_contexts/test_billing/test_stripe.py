@@ -78,6 +78,15 @@ class TestCreateSubscription:
             assert sub.remote_price_id == stripe_price.id
             assert sub.remote_customer_id == subscription.customer
 
+    async def test_create_stripe_subscription_no_subscription_info(self, dbsession: AsyncSession, team: Team) -> None:
+        stripe_session = StripeSessionFactory.make(
+            client_reference_id=str(team.id),
+            subscription=None,
+        )
+
+        with pytest.raises(BillingError, match="does not have a subscription"):
+            await create_stripe_subscription(dbsession, stripe_session)
+
     async def test_create_stripe_subscription_no_db_plan(self, dbsession: AsyncSession, team: Team) -> None:
         subscription_id = f"sub_{uuid.uuid4().hex}"
         stripe_price = StripePriceFactory.make()
@@ -97,7 +106,28 @@ class TestCreateSubscription:
         with mock.patch("app.contexts.billing.stripe.stripe.Subscription.retrieve_async", return_value=subscription):
             with pytest.raises(SubscriptionPlanError) as ex:
                 await create_stripe_subscription(dbsession, stripe_session)
-                assert ex.value.error_code == error_codes.SUBSCRIPTION_MISSING_PLAN
+            assert ex.value.error_code == error_codes.SUBSCRIPTION_MISSING_PLAN
+
+    async def test_create_stripe_subscription_without_client_reference(
+        self, dbsession: AsyncSession, team: Team
+    ) -> None:
+        subscription_id = f"sub_{uuid.uuid4().hex}"
+        stripe_price = StripePriceFactory.make()
+        subscription = StripeSubscriptionFactory.make(
+            id=subscription_id,
+            status="active",
+            current_period_end=1620000000,
+            items=StripeSubscriptionItemListFactory(
+                data=[StripeSubscriptionItemFactory(price=stripe_price)],
+            ),
+        )
+        stripe_session = StripeSessionFactory.make(
+            client_reference_id=None,
+            subscription=subscription.id,
+        )
+
+        with pytest.raises(BillingError, match="Client reference id is missing."):
+            await create_stripe_subscription(dbsession, stripe_session)
 
     async def test_create_stripe_subscription_duplicate_subscription(self, dbsession: AsyncSession, team: Team) -> None:
         subscription_id = f"sub_{uuid.uuid4().hex}"
@@ -119,7 +149,7 @@ class TestCreateSubscription:
         with mock.patch("app.contexts.billing.stripe.stripe.Subscription.retrieve_async", return_value=subscription):
             with pytest.raises(DuplicateSubscriptionError) as ex:
                 await create_stripe_subscription(dbsession, stripe_session)
-                assert ex.value.error_code == error_codes.SUBSCRIPTION_DUPLICATE
+            assert ex.value.error_code == error_codes.SUBSCRIPTION_DUPLICATE
 
     async def test_create_stripe_subscription_without_sub_items(self, dbsession: AsyncSession, team: Team) -> None:
         subscription_id = f"sub_{uuid.uuid4().hex}"

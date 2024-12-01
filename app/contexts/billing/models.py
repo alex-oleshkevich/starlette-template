@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import datetime
 import enum
 
 import sqlalchemy as sa
@@ -53,7 +54,7 @@ class Subscription(Base):
     remote_price_id: Mapped[str] = mapped_column(
         sa.Text, doc="Payment processor price ID", default="", server_default=""
     )
-    expires_at: Mapped[DateTimeTz | None] = mapped_column(doc="When the subscription will expire")
+    expires_at: Mapped[DateTimeTz] = mapped_column(doc="When the subscription will expire")
     created_at: Mapped[AutoCreatedAt] = mapped_column(doc="When the first subscription was created")
     meta: Mapped[SubscriptionMetadata] = mapped_column(
         EmbedType(SubscriptionMetadata), default=SubscriptionMetadata, server_default="{}"
@@ -65,3 +66,16 @@ class Subscription(Base):
     @property
     def is_cancelled(self) -> bool:
         return self.status == self.Status.CANCELLED
+
+    @property
+    def is_expired(self) -> bool:
+        return datetime.datetime.now(datetime.UTC) >= self.expires_at
+
+    @property
+    def is_trialing(self) -> bool:
+        return self.status == self.Status.TRIALING
+
+    @property
+    def is_expires_soon(self) -> bool:
+        threshold = datetime.timedelta(days=3)
+        return self.expires_at - datetime.datetime.now(datetime.UTC) < threshold

@@ -57,15 +57,6 @@
                                         {{ _('Suspend') }}
                                     {% endif %}
                                 </button>
-                                {% if member.user == current_user %}
-                                    {% if current_team.owner != member.user %}
-                                        <button type="button"
-                                                hx-confirm="{{ _('Are you sure you want to leave this team?') }}"
-                                                hx-post="{{ url('teams.members.leave') }}">
-                                            {{ _('Leave') }}
-                                        </button>
-                                    {% endif %}
-                                {% endif %}
                             </nav>
                         </div>
                     </div>

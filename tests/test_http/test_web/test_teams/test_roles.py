@@ -24,7 +24,7 @@ class TestRoles:
         )
         assert response.status_code == 204
         assert dbsession_sync.scalars(
-            sa.select(TeamRole).filter(TeamRole.name == "Test Role", TeamRole.team == team)
+            sa.select(TeamRole).where(TeamRole.name == "Test Role", TeamRole.team == team)
         ).one_or_none()
 
     def test_edit_role(self, auth_client: TestAuthClient, team: Team, dbsession_sync: Session) -> None:
@@ -32,24 +32,41 @@ class TestRoles:
         response = auth_client.get(f"/app/teams/roles/edit/{role.id}")
         assert response.status_code == 200
 
-        # response = auth_client.post(
-        #     f"/app/teams/roles/edit/{role.id}",
-        #     data={
-        #         "name": "Test Role2",
-        #         "is_admin": "1",
-        #     },
-        # )
-        # assert response.status_code == 204
-        # assert dbsession_sync.scalars(
-        #     sa.select(TeamRole).filter(TeamRole.name == "Test Role2", TeamRole.team == team)
-        # ).one_or_none()
+        response = auth_client.post(
+            f"/app/teams/roles/edit/{role.id}",
+            data={
+                "name": "Test Role2",
+                "is_admin": "1",
+            },
+        )
+        assert response.status_code == 204
+        assert dbsession_sync.scalars(
+            sa.select(TeamRole).where(TeamRole.name == "Test Role2", TeamRole.team == team)
+        ).one_or_none()
+
+    def test_update_permissions(self, auth_client: TestAuthClient, team: Team, dbsession_sync: Session) -> None:
+        role = TeamRoleFactory(team=team, name="Test Role")
+        response = auth_client.post(
+            f"/app/teams/roles/edit/{role.id}",
+            data={
+                "name": "Test Role2",
+                "is_admin": "1",
+                "permissions": ["team.access"],
+            },
+        )
+        assert response.status_code == 204
+        assert dbsession_sync.scalars(
+            sa.select(TeamRole).where(
+                TeamRole.name == "Test Role2", TeamRole.team == team, TeamRole.permissions == ["team.access"]
+            )
+        ).one_or_none()
 
     def test_delete_role(self, auth_client: TestAuthClient, team: Team, dbsession_sync: Session) -> None:
         role = TeamRoleFactory(team=team, name="Test Role")
         response = auth_client.post(f"/app/teams/roles/delete/{role.id}")
         assert response.status_code == 204
         assert not dbsession_sync.scalars(
-            sa.select(TeamRole).filter(TeamRole.id == role.id, TeamRole.team == team)
+            sa.select(TeamRole).where(TeamRole.id == role.id, TeamRole.team == team)
         ).one_or_none()
 
     def test_delete_role_with_members(self, auth_client: TestAuthClient, team: Team, dbsession_sync: Session) -> None:
@@ -61,5 +78,5 @@ class TestRoles:
         response = auth_client.post(f"/app/teams/roles/delete/{role.id}")
         assert response.status_code == 400
         assert dbsession_sync.scalars(
-            sa.select(TeamRole).filter(TeamRole.id == role.id, TeamRole.team == team)
+            sa.select(TeamRole).where(TeamRole.id == role.id, TeamRole.team == team)
         ).one_or_none()

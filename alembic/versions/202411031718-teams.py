@@ -8,7 +8,7 @@ Create Date: 2024-11-03 17:18:11.898633
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = "ff6539c20a9e"
@@ -39,6 +39,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("team_id", sa.BigInteger(), nullable=False),
         sa.Column("is_admin", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.Column("permissions", JSONB(), server_default="[]", nullable=False),  # type: ignore
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(

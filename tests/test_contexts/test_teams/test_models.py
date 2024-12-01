@@ -1,4 +1,5 @@
 from app.contexts.teams.models import Team
+from tests.factories import TeamInviteFactory
 
 
 class TestTeamModel:
@@ -15,3 +16,9 @@ class TestTeamModel:
 
         team = Team(name="My Cool Team")
         assert team.initials == "MC"
+
+
+class TestTeamInvite:
+    def test_str(self) -> None:
+        model = TeamInviteFactory()
+        assert str(model) == model.email

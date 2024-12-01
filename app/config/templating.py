@@ -5,7 +5,7 @@ from starlette.templating import Jinja2Templates
 from starlette_babel.contrib.jinja import configure_jinja_env
 
 from app.config import settings
-from app.config.templating_context import app_processor
+from app.config.templating_context import app_processor, authenticated_processor
 
 jinja_env = jinja2.Environment(
     autoescape=True,
@@ -23,6 +23,7 @@ templates = Jinja2Templates(
     env=jinja_env,
     context_processors=[
         app_processor,
+        authenticated_processor,
     ],
 )
 

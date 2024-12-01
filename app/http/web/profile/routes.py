@@ -12,7 +12,8 @@ from app.config.templating import templates
 from app.contexts.auth.mails import send_account_deleted_mail, send_password_changed_mail
 from app.contexts.users.repo import UserRepo
 from app.contrib import forms, htmx
-from app.http.dependencies import CurrentUser, DbSession
+from app.http.dependencies import CurrentMembership, CurrentUser, DbSession
+from app.http.exceptions import PermissionDeniedError
 from app.http.web.profile.forms import PasswordForm, ProfileForm
 
 routes = RouteGroup()
@@ -81,3 +82,16 @@ async def delete_password_view(request: Request, dbsession: DbSession, user: Cur
         background=BackgroundTask(send_account_deleted_mail, user),
     )
     return htmx.redirect(response, request.url_for("login"))
+
+
+@routes.post("/profile/leave", name="profile.leave_team")
+async def leave_team_view(request: Request, dbsession: DbSession, team_member: CurrentMembership) -> Response:
+    if team_member.team.owner == team_member.user:
+        raise PermissionDeniedError(_("You cannot leave your own team."))
+
+    team_member.suspend()
+    await dbsession.commit()
+    flash(request).success(_("You have left the team."))
+    return htmx.response(status.HTTP_302_FOUND, headers={"location": str(request.url_for("dashboard"))}).redirect(
+        request.url_for("dashboard")
+    )

@@ -7,6 +7,8 @@ from starlette_babel.locale import get_language
 from starlette_flash import flash
 
 from app.config import settings
+from app.config.permissions import guards
+from app.config.permissions.context import Guard
 from app.contrib.urls import abs_url_for, media_url, pathname_matches, static_url, url_matches
 
 
@@ -16,6 +18,7 @@ def css_classes(**classes: bool) -> str:
 
 
 def app_processor(request: Request) -> dict[str, typing.Any]:
+    """Add general context to the template."""
     return {
         "app": request.app,
         "settings": settings,
@@ -30,9 +33,26 @@ def app_processor(request: Request) -> dict[str, typing.Any]:
         "app_language": get_language(),
         "current_user": request.user,
         "css_classes": css_classes,
-        "current_team": getattr(request.state, "team", None),
-        "current_team_member": getattr(request.state, "team_member", None),
-        "current_subscription": getattr(request.state, "subscription", None),
-        "team_memberships": getattr(request.state, "team_memberships", []),
         **(getattr(request.state, "template_context", {})),
     }
+
+
+def authenticated_processor(request: Request) -> dict[str, typing.Any]:
+    """Add authenticated context to the template."""
+    authenticated_context = {}
+
+    try:
+        guard = Guard(request.state.access_context)
+        authenticated_context.update(
+            {
+                "current_team": request.state.team,
+                "current_team_member": request.state.team_member,
+                "current_subscription": request.state.subscription,
+                "team_memberships": request.state.team_memberships,
+                "is_granted": guard.check,
+                "permissions": guards,
+            }
+        )
+    except AttributeError:
+        pass
+    return authenticated_context

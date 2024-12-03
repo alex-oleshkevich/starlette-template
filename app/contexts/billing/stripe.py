@@ -7,7 +7,7 @@ import stripe
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette_babel import gettext_lazy as _
 
-from app.config import settings
+from app.config.settings import settings
 from app.contexts.billing.exceptions import (
     BillingError,
     DuplicateSubscriptionError,
@@ -18,7 +18,6 @@ from app.contexts.billing.models import Subscription, SubscriptionMetadata, Subs
 from app.contexts.billing.repo import SubscriptionRepo
 from app.contexts.teams.repo import TeamRepo
 
-stripe.api_key = settings.stripe_secret_key
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +26,7 @@ async def sync_stripe_products(dbsession: AsyncSession) -> None:
     our_plans = await repo.plans.all()
     our_plans_by_remote_id = {plan.remote_product_id: plan for plan in our_plans}
     our_plans_by_name = {plan.name: plan for plan in our_plans}
-    products = await stripe.Product.list_async(active=True, type="service")
+    products = await stripe.Product.list_async(active=True, type="service", api_key=settings.stripe_secret_key)
     for product in products:
         if product.id in our_plans_by_remote_id:
             click.echo(f'Product "{product.id}" is synced.')
@@ -102,7 +101,9 @@ async def create_stripe_subscription(dbsession: AsyncSession, stripe_session: st
     if not stripe_session.client_reference_id:
         raise BillingError(_("Client reference id is missing."))
 
-    stripe_subscription = await stripe.Subscription.retrieve_async(stripe_session.subscription)
+    stripe_subscription = await stripe.Subscription.retrieve_async(
+        stripe_session.subscription, api_key=settings.stripe_secret_key
+    )
     subscription = await repo.get_subscription_by_remote_id(stripe_subscription.id)
     if subscription is not None:
         raise DuplicateSubscriptionError()
@@ -164,11 +165,14 @@ async def update_stripe_subscription(dbsession: AsyncSession, stripe_subscriptio
     return subscription
 
 
-async def cancel_stripe_subscription(dbsession: AsyncSession, stripe_subscription: stripe.Subscription) -> None:
+async def cancel_stripe_subscription(dbsession: AsyncSession, stripe_subscription: stripe.Subscription) -> int | None:
+    """Cancel subscription. Return team_id."""
     repo = SubscriptionRepo(dbsession)
     subscription = await repo.get_subscription_by_remote_id(stripe_subscription.id)
     if subscription is None:
-        return
+        return None
 
+    team_id = subscription.team_id
     await dbsession.delete(subscription)
     await dbsession.flush()
+    return team_id

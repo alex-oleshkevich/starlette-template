@@ -65,6 +65,7 @@ repos:
                     - starlette_babel
                     - starlette_flash
                     - starlette_sqlalchemy
+                    - stripe
                     - sqlalchemy[asyncio]
                     - types-passlib
                     - types-python-slugify

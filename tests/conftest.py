@@ -1,4 +1,5 @@
 import typing
+import logging
 
 import pytest
 from mailers import InMemoryTransport
@@ -53,7 +54,7 @@ def app() -> Starlette:
 
 @pytest.fixture(autouse=True)
 def configure_logging(caplog: pytest.LogCaptureFixture) -> None:
-    caplog.set_level("ERROR")
+    caplog.set_level(logging.CRITICAL)
 
 
 @pytest.fixture(autouse=True, scope="session")

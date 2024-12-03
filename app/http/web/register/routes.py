@@ -34,7 +34,6 @@ register_rate_limit = limits.parse("3/minute")
 @routes.get_or_post("/register", name="register")
 async def register_view(request: Request, dbsession: DbSession, settings: Settings) -> Response:
     status_code = status.HTTP_200_OK
-    print(request.session.get("invited_user_email", None))
     invited_user_email = request.session.get("invited_user_email", None)
     form = await forms.create_form(request, RegisterForm, data={"email": invited_user_email})
     headers = {}

@@ -1,5 +1,6 @@
 import typing
 
+import pydantic
 from fastapi import HTTPException as FastAPIHTTPException
 from fastapi.exceptions import RequestValidationError
 from starlette import status
@@ -17,14 +18,14 @@ from app.http.responses import JSONErrorResponse
 
 
 async def api_fastapi_validation_handler(_request: Request, exc: Exception) -> JSONResponse:
-    assert isinstance(exc, RequestValidationError)
+    assert isinstance(exc, RequestValidationError | pydantic.ValidationError)
 
     error_code = error_codes.VALIDATION_ERROR
     message = str(_("Validation error."))
     non_field_error_types = ["model_attributes_type", "model_type"]
     non_field_errors = [str(error["msg"]) for error in exc.errors() if error["type"] in non_field_error_types]
     field_errors = {
-        error["loc"][0]: [str(error["msg"])]
+        str(error["loc"][0]): [str(error["msg"])]
         for error in exc.errors()
         if len(error["loc"]) and error["type"] not in non_field_error_types
     }

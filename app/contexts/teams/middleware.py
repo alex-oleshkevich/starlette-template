@@ -37,8 +37,12 @@ class TeamMiddleware:
 
         team_id: int | None = None
         request = Request(scope)
+        if not request.user.is_authenticated:
+            await self.app(scope, receive, send)
+            return
+
         repo = TeamRepo(request.state.dbsession)
-        memberships = await repo.get_active_memberships(request.user.id)
+        memberships = await repo.get_active_memberships(int(request.user.identity))
         request.state.team = None
         request.state.team_member = None
         request.state.team_memberships = memberships

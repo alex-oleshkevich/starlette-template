@@ -17,6 +17,7 @@ from app.config import settings as app_settings
 from app.config.database import new_dbsession
 from app.config.permissions.context import AccessContext, Guard
 from app.config.settings import Config
+from app.contexts.auth.tokens import TokenIssuer
 from app.contexts.billing.models import Subscription, SubscriptionPlan
 from app.contexts.teams.models import Team, TeamMember, TeamRole
 from app.contexts.users.models import User
@@ -146,9 +147,20 @@ def guard(access_context: AccessContext) -> Guard:
 
 
 @pytest.fixture
+def token_manager(settings: Config) -> TokenIssuer:
+    return TokenIssuer(
+        secret_key=settings.secret_key,
+        issuer=settings.app_name,
+        audience=settings.app_url,
+        access_token_ttl=settings.access_token_ttl,
+        refresh_token_ttl=settings.refresh_token_ttl,
+    )
+
+
+@pytest.fixture
 def client(app: Starlette) -> typing.Generator[TestClient, None, None]:
     """A test client. Not authenticated."""
-    with TestClient(app, follow_redirects=False) as client:
+    with TestClient(app, follow_redirects=False, raise_server_exceptions=False) as client:
         yield client
 
 
@@ -170,6 +182,34 @@ async def auth_client(
     ) as client:
         await client.force_user(team_member.user)
         client.force_team(team_member.team)
+        yield client
+
+
+@pytest.fixture
+async def api_client(
+    app: Starlette,
+    team_member: TeamMember,
+    user_session: SessionStore,
+    settings: Config,
+    token_manager: TokenIssuer,
+    dbsession: AsyncSession,
+) -> typing.AsyncGenerator[TestClient, None]:
+    """Authenticated client."""
+    refresh_token, _ = await token_manager.issue_refresh_token(
+        dbsession,
+        subject=team_member.user.id,
+        subject_name=team_member.user.display_name,
+        extra_claims={},
+    )
+    access_token, _ = token_manager.issue_access_token(refresh_token)
+
+    with TestClient(
+        app,
+        follow_redirects=False,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+        },
+    ) as client:
         yield client
 
 

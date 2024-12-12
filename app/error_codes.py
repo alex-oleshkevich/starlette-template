@@ -31,6 +31,8 @@ VALIDATION_ERROR = ErrorCode("validation_error", _("Invalid data. Please check y
 
 AUTH_ACCOUNT_DISABLED = ErrorCode("auth.account_disabled", _("This account is deactivated."))
 AUTH_INVALID_CREDENTIALS = ErrorCode("auth.invalid_credentials", _("Invalid email or password."))
+AUTH_INVALID_ACCESS_TOKEN = ErrorCode("auth.invalid_access_token", _("Invalid access token."))
+AUTH_INVALID_REFRESH_TOKEN = ErrorCode("auth.invalid_refresh_token", _("Invalid refresh token."))
 BILLING_ERROR = ErrorCode("billing.error", _("Billing error."))
 SUBSCRIPTION_DUPLICATE = ErrorCode("subscription.duplicate", _("A subscription is already active."))
 SUBSCRIPTION_ERROR = ErrorCode("subscription.error", _("Subscription error."))

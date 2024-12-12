@@ -60,6 +60,10 @@ class Config(BaseSettings):
     # redis
     redis_url: str = "redis://"
 
+    # auth
+    access_token_ttl: datetime.timedelta = datetime.timedelta(minutes=15)
+    refresh_token_ttl: datetime.timedelta = datetime.timedelta(days=30)
+
     # cache options
     cache_namespace: str = f"{app_slug}:{app_env}:"
     cache_url: str = "redis://?socket_timeout=1"
@@ -96,6 +100,7 @@ class Config(BaseSettings):
 
     # session settings
     session_cookie: str = "session"
+    session_rolling: bool = True
     session_lifetime: datetime.timedelta = datetime.timedelta(days=14)
 
     # registration
@@ -123,7 +128,7 @@ class TestConfig(Config):
     Values can be overridden from the environment variables. Such environment variables must be prefixed with TEST_."""
 
     model_config = SettingsConfigDict(env_file=None, secrets_dir=None, env_prefix="TEST_")
-
+    settings: bool = True
     app_env: Environment = Environment.UNITTEST
     encryption_key: str = "w2P1uYmFG0PFmm0WcH4Eh/zEwXCoCgprtmiPl5zdDuU="
     database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"

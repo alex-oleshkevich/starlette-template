@@ -14,6 +14,10 @@ class SubscriptionMiddleware:
             return
 
         request = Request(scope)
+        if not request.user.is_authenticated:
+            await self.app(scope, receive, send)
+            return
+
         repo = SubscriptionRepo(request.state.dbsession)
         request.state.subscription = await repo.get_team_subscription(request.state.team.id)
 

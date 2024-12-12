@@ -29,19 +29,17 @@ class JSONErrorResponse(JSONResponse):
         headers: typing.Mapping[str, str] | None = None,
         background: BackgroundTask | None = None,
     ) -> None:
-        message_code = error_code.code
         final_message = message or error_code.description
         non_field_errors = [str(x) for x in non_field_errors or []]
         field_errors = {field: [str(x) for x in errors] for field, errors in (field_errors or {}).items()}
-
         schema = ErrorSchema(
-            code=message_code,
+            code=error_code.code,
             message=str(final_message),
             field_errors=field_errors,
             non_field_errors=non_field_errors,
         )
         super().__init__(
-            schema.model_dump(),
+            schema.model_dump(mode="json"),
             status_code=status_code,
             headers=headers,
             background=background,

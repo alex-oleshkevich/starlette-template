@@ -49,6 +49,10 @@ class AccessContextMiddleware:
         assert scope["type"] in ["http", "websocket"]
 
         request = HTTPConnection(scope)
+        if not request.user.is_authenticated:
+            await self.app(scope, receive, send)
+            return
+
         user: User = request.user
         try:
             team: Team = request.state.team

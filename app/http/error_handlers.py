@@ -10,10 +10,20 @@ from starlette.responses import Response
 from app import error_codes
 from app.config.templating import templates
 from app.contrib import htmx
+from app.error_codes import ErrorCode
 from app.http.exceptions import HTTPException
 from app.http.responses import JSONErrorResponse
 
 logger = logging.getLogger(__name__)
+common_error_code_mapping: dict[int, ErrorCode] = {
+    400: error_codes.BAD_REQUEST,
+    401: error_codes.AUTH_UNAUTHENTICATED,
+    403: error_codes.PERMISSION_DENIED,
+    404: error_codes.RESOURCE_NOT_FOUND,
+    409: error_codes.RESOURCE_CONFLICT,
+    422: error_codes.VALIDATION_ERROR,
+    429: error_codes.RATE_LIMITED,
+}
 
 
 def remap_exception(new_exception: type[Exception]) -> typing.Callable[[Request, Exception], Response]:
@@ -39,15 +49,6 @@ def exception_handler(request: Request, exc: Exception) -> Response:
     headers: typing.Mapping[str, str] = {}
     field_errors: dict[str, list[str]] = {}
     non_field_errors: list[str] = []
-    common_error_code_mapping = {
-        400: error_codes.BAD_REQUEST,
-        401: error_codes.AUTH_UNAUTHENTICATED,
-        403: error_codes.PERMISSION_DENIED,
-        404: error_codes.RESOURCE_NOT_FOUND,
-        409: error_codes.RESOURCE_CONFLICT,
-        422: error_codes.VALIDATION_ERROR,
-        429: error_codes.RATE_LIMITED,
-    }
 
     if isinstance(exc, StarletteHTTPException):
         status_code = exc.status_code
@@ -70,7 +71,14 @@ def exception_handler(request: Request, exc: Exception) -> Response:
     if htmx.is_htmx_request(request):
         return htmx.response(status_code=status_code, headers=response_headers).error_toast(message)
 
-    if "application/json" in request.headers.get("accept", ""):
+    # if accept is application/json or */* with content-type application/json, return JSONErrorResponse
+    if any(
+        [
+            "application/json" in request.headers.get("accept", ""),
+            request.headers.get("accept", "") == "*/*"
+            and "application/json" in request.headers.get("content-type", ""),
+        ]
+    ):
         return JSONErrorResponse(
             message,
             status_code=status_code,

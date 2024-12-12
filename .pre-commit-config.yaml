@@ -52,6 +52,7 @@ repos:
                     - cryptography
                     - colorhash
                     - factory-boy
+                    - fastapi
                     - jinja2
                     - limits[async-redis]
                     - mailers

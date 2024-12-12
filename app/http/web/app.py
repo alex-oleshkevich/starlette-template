@@ -31,7 +31,7 @@ web_router = Router(
     middleware=[
         Middleware(
             SessionMiddleware,
-            rolling=True,
+            rolling=settings.session_rolling,
             lifetime=settings.session_lifetime,
             store=session_backend,
             cookie_name=settings.session_cookie,

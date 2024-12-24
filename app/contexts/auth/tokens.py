@@ -133,7 +133,7 @@ class TokenIssuer:
         fetched_token = await repo.find_by_jit(str(token[JWTClaim.JIT]))
         return fetched_token is not None
 
-    def create_jwt_token(self, claims: dict[str, ClaimValue], headers: typing.Mapping[str, str] | None = None) -> str:
+    def create_jwt_token(self, claims: dict[str, ClaimValue], headers: dict[str, str] | None = None) -> str:
         return str(jwt.encode(payload=claims, key=self.secret_key, headers=headers, algorithm=JWT_ALGORITHM))
 
     def parse_token(self, token: str) -> TokenPayload:

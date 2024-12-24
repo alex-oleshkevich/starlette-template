@@ -25,7 +25,7 @@ async def api_fastapi_validation_handler(_request: Request, exc: Exception) -> J
     non_field_error_types = ["model_attributes_type", "model_type"]
     non_field_errors = [str(error["msg"]) for error in exc.errors() if error["type"] in non_field_error_types]
     field_errors = {
-        str(error["loc"][0]): [str(error["msg"])]
+        str(error["loc"][-1]): [str(error["msg"])]
         for error in exc.errors()
         if len(error["loc"]) and error["type"] not in non_field_error_types
     }

@@ -128,7 +128,7 @@ class TestConfig(Config):
     Values can be overridden from the environment variables. Such environment variables must be prefixed with TEST_."""
 
     model_config = SettingsConfigDict(env_file=None, secrets_dir=None, env_prefix="TEST_")
-    settings: bool = True
+    debug: bool = True
     app_env: Environment = Environment.UNITTEST
     encryption_key: str = "w2P1uYmFG0PFmm0WcH4Eh/zEwXCoCgprtmiPl5zdDuU="
     database_url: str = "postgresql+psycopg_async://postgres@localhost:5432/project_template_test"

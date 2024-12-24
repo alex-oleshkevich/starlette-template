@@ -25,3 +25,22 @@ class RefreshTokenValidator(BaseModel):
 class RefreshTokenSerializer(BaseModel):
     access_token: str
     refresh_token: str
+
+
+class ResetPasswordValidator(BaseModel):
+    email: str
+
+
+class ResetPasswordSerializer(BaseModel):
+    pass
+
+
+class ChangePasswordValidator(BaseModel):
+    email: str
+    signature: str
+    password: str
+    password_confirm: str
+
+
+class ChangePasswordSerializer(BaseModel):
+    pass

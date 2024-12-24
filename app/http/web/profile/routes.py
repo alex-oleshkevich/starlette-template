@@ -70,7 +70,7 @@ async def password_view(request: Request, dbsession: DbSession, user: CurrentUse
 
 
 @routes.delete("/profile", name="profile.delete")
-async def delete_password_view(request: Request, dbsession: DbSession, user: CurrentUser) -> Response:
+async def delete_profile_view(request: Request, dbsession: DbSession, user: CurrentUser) -> Response:
     repo = UserRepo(dbsession)
     await repo.delete(user)
     await dbsession.commit()

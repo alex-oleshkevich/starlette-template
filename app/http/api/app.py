@@ -15,6 +15,7 @@ from app.exceptions import RateLimitedError
 from app.http.api.auth.routes import router as auth_router
 from app.http.api.error_handlers import api_exception_handler, api_fastapi_validation_handler, api_rate_limited_handler
 from app.http.api.profile.routes import router as profile_router
+from app.http.api.register.routes import router as register_router
 from app.http.api.schemas import Paginated
 from app.http.responses import ErrorSchema
 
@@ -58,3 +59,4 @@ api_app = FastAPI(
 )
 api_app.include_router(auth_router)
 api_app.include_router(profile_router)
+api_app.include_router(register_router)

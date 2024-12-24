@@ -14,11 +14,15 @@ Well, I wanted to have a template, that enables me to start a new project quickl
 without having to worry about the basic stuff like authentication, authorization, configuration, etc.
 I also wanted to have a template that is easy to understand and extend, and that is based on modern technologies.
 
+The project does not pursue the goal of being the fastest.
+Instead, we put developer experience and productivity first. When save days of work by using this template,
+then you can find a way to optimize the performance later.
+
 ## Features
 
-The project is based on Starlette library.
+### Technical features
 
-### Tech features
+Here is a list of technical features that the project provides out of the box:
 
 - **Project structure**: well organized project structure with a clear separation of concerns.
 - **Configuration**: envvars based configuration with a sensible defaults.
@@ -44,10 +48,14 @@ The project is based on Starlette library.
 
 ### Business features
 
+It comes with a set of business features that are common in web applications:
+
 - **Authentication**: support for email/password, JWT token, and social authentication.
 - **Authorization**: powerful permission system with support for roles and permissions.
+- **Social authentication**: support for social authentication using OAuth2.
 - **Stripe integration**: support for subscription plans and payments using Stripe.
 - **User registration**: support for user registration with email verification.
+- **User profile**: support for user profile with avatar and other details.
 
 ## Installation
 
@@ -77,3 +85,17 @@ touch .env
 
 It is ok to have it empty at this stage since the project has sensible defaults.
 Put any configuration overrides in the `.env` file.
+
+5. Run the application:
+
+```bash
+poetry run uvicorn app.main:app
+```
+
+Navigate to `http://localhost:8000` to see it working.
+
+6. Run the tests to validate the installation:
+
+```bash
+poetry run pytest
+```

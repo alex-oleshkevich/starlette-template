@@ -10,12 +10,12 @@ package-mode = false
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 async-storages = { extras = ["s3"], version = "^0.7" }
 fastapi = "^0.115"
 mailers = {extras = ["css-inline", "smtp"], version = "^3.2.0"}
@@ -86,7 +86,7 @@ ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py313"
 indent-width = 4
 exclude = ['var', '.venv', '.git']
 

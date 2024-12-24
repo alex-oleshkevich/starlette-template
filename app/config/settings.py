@@ -26,7 +26,7 @@ IS_TEST = "pytest" in sys.argv[0] or os.environ.get("APP_ENV", default="") == En
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="",
-        env_file=REPO_DIR / ".env",
+        env_file=[REPO_DIR / ".env-defaults", REPO_DIR / ".env"],
         secrets_dir=os.environ.get("SECRETS_DIR"),
     )
 

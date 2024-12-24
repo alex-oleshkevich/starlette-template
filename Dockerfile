@@ -16,7 +16,7 @@ RUN npm run build
 # ------------------------------------------------------
 # STAGE 2 -- build application image
 # ------------------------------------------------------
-FROM python:3.12-slim
+FROM python:3.13-slim
 EXPOSE 8000
 WORKDIR /code
 

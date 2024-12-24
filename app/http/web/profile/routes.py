@@ -3,10 +3,12 @@ from starlette.background import BackgroundTask
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, Response
 from starlette_auth import logout
+from starlette_auth.authentication import update_session_auth_hash
 from starlette_babel import gettext_lazy as _
 from starlette_dispatch import RouteGroup
 from starlette_flash import flash
 
+from app import settings
 from app.config.crypto import averify_password, make_password
 from app.config.templating import templates
 from app.contexts.auth.mails import send_account_deleted_mail, send_password_changed_mail
@@ -60,6 +62,7 @@ async def password_view(request: Request, dbsession: DbSession, user: CurrentUse
             assert form.password.data
             user.password = make_password(form.password.data)
             await dbsession.commit()
+            update_session_auth_hash(request, user, settings.secret_key)
             return htmx.response(status.HTTP_204_NO_CONTENT).toast(_("Password has been changed."))
 
         form.current_password.errors = [_("Current password is incorrect."), *form.current_password.errors]

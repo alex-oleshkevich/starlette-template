@@ -10,7 +10,6 @@ permissions:
     packages: write
 
 env:
-    PYTHON_VERSION: 3.13
     REGISTRY: ghcr.io
     IMAGE_NAME: "${{ github.repository }}"
 
@@ -20,7 +19,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                python-version: [ ${{ env.PYTHON_VERSION }} ]
+                python-version: [ '3.13' ]
 
         steps:
             -   uses: actions/checkout@v4
@@ -44,7 +43,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                python-version: [ ${{ env.PYTHON_VERSION }} ]
+                python-version: [ '3.13' ]
         steps:
             -   uses: actions/checkout@v4
             -   run: ./scripts/run-isolated-tests.sh

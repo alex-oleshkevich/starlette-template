@@ -29,6 +29,7 @@ Here is a list of technical features that the project provides out of the box:
 - **Multiple environments**: support for multiple environments (development, testing, production) with an option to
   override configuration.
 - **Database**: support for both sync and async database access using SQLAlchemy.
+- **Database migrations**: support for database migrations using Alembic.
 - **Testing**: good test coverage with various fixtures and a way to fux configuration for testing.
 - **Docker**: includes Dockerfile and docker-compose for easy deployment.
 - **Deployment**: deploy anywhere using GitHub Workflows and other CI/CD tools.
@@ -45,6 +46,10 @@ Here is a list of technical features that the project provides out of the box:
 - **File uploads**: upload to local directory or S3 using file system abstraction.
 - **Pagination**: paginate database queries.
 - **Database query helpers**: common database operations made easy.
+- **Dependency injection**: use dependency injection to manage dependencies.
+- **Semantic exceptions**: use semantic exceptions to handle errors.
+- **Error codes**: use error codes to identify errors.
+- **Frontend assets**: modern frontend using WebComponents, Unpoly (it's like HTMX), and Tailwind CSS.
 
 ### Business features
 
